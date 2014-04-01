@@ -1,0 +1,39 @@
+<?php
+/**
+ * Implements hook_permission().
+ */
+function onscroll_permission() {
+  return array(
+    'administer onscroll' => array(
+      'title' => t('Administer onscroll'),
+      'description' => t('Administer account settings and visibility of onscroll on your site.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function onscroll_menu() {
+  $items['admin/config/system/onscroll'] = array(
+    'title' => 'OnScroll',
+    'description' => 'Configure onscroll blocks on your website.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('onscroll_admin_settings_form'),
+    'access arguments' => array('administer onscroll'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function onscroll_help($path, $arg) {
+  switch ($path) {
+    case 'admin/config/system/onscroll':
+      return t('<a href="@url">OnScroll</a> determines the most appropriate time to deliver a viewable ad based on user behaviour.', array('@url' => 'http://www.onscroll.com/'));
+  }
+}

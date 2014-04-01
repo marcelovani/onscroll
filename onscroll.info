@@ -1,0 +1,6 @@
+name = OnScroll
+description = Ad serving technology that delivers advertising only when the code is in a viewable area.
+core = 7.x
+dependencies[] = dfp
+configure = admin/config/system/onscroll
+package = Advertising

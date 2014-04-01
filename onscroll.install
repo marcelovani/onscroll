@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * Implements hook_uninstall().
+ */
+function onscroll_uninstall() {
+  $variables = array(
+    'onscroll_enabled',
+    'onscroll_mode',
+    'onscroll_margin',
+    'onscroll_margin_top',
+    'onscroll_height',
+    'onscroll_width',
+    'onscroll_interval',
+  );
+  foreach ($variables as $name) {
+    variable_del($name);
+  }
+}
