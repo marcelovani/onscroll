@@ -37,3 +37,23 @@ function onscroll_help($path, $arg) {
       return t('<a href="@url">OnScroll</a> determines the most appropriate time to deliver a viewable ad based on user behaviour.', array('@url' => 'http://www.onscroll.com/'));
   }
 }
+
+/**
+ * Implements hook_page_alter().
+ */
+function onscroll_page_alter(&$page) {
+
+  if (!path_is_admin(current_path())) {
+    if (variable_get('onscroll_enabled')) {
+      $script = 'varonScrOll=newObject();';
+      $script .= '';
+      $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600);
+      $script .= 'onScrOll.marginTop' . variable_get('onscroll_margin_top', 10);
+      $script .= 'onScrOll.mode=' . variable_get('onscroll_mode', 'sticky');
+      $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250);
+      $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300);
+      $script .= 'onScrOll.reload=' . variable_get('onscroll_reload', FALSE);
+      drupal_add_js($script, array('scope' => 'footer', 'type' => 'inline'));
+    }
+  }
+}
