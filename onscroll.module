@@ -1,4 +1,6 @@
 <?php
+define('ONSCROLL_URL', 'http://cdn.onscroll.com/onscroll.ms.js');
+
 /**
  * Implements hook_permission().
  */
@@ -45,15 +47,23 @@ function onscroll_page_alter(&$page) {
 
   if (!path_is_admin(current_path())) {
     if (variable_get('onscroll_enabled')) {
-      $script = 'varonScrOll=newObject();';
-      $script .= '';
-      $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600);
-      $script .= 'onScrOll.marginTop' . variable_get('onscroll_margin_top', 10);
-      $script .= 'onScrOll.mode=' . variable_get('onscroll_mode', 'sticky');
-      $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250);
-      $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300);
-      $script .= 'onScrOll.reload=' . variable_get('onscroll_reload', FALSE);
+      // Add inline script.
+      $script = 'var onScrOll=new Object();' . PHP_EOL;
+      $script .= 'onScrOll.code="' . variable_get('onscroll_code', '') . '";';
+      $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600) . ';';
+      $script .= 'onScrOll.marginTop=' . variable_get('onscroll_margin_top', 10) . ';';
+      $script .= 'onScrOll.mode="' . variable_get('onscroll_mode', 'sticky') . '";';
+      $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250) . ';';
+      $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300) . ';';
+      $script .= 'onScrOll.reload=' . ((variable_get('onscroll_reload', FALSE) == FALSE) ? 'false' : 'true') . ';';
       drupal_add_js($script, array('scope' => 'footer', 'type' => 'inline'));
+
+      // Add external script.
+      $script = variable_get('onscroll_url', ONSCROLL_URL);
+      $script .= '?campaignId=' . variable_get('onscroll_campaign_id');
+      $script .= '&creativeId=' . variable_get('onscroll_creative_id');
+      $script .= '&accountId=' . variable_get('onscroll_account_id');
+      drupal_add_js($script, array('scope' => 'footer', 'type' => 'external'));
     }
   }
 }
