@@ -48,14 +48,52 @@ function onscroll_page_alter(&$page) {
   if (!path_is_admin(current_path())) {
     if (variable_get('onscroll_enabled')) {
       // Add inline script.
+
+      $ad_slot = '';
+      if (variable_get('onscroll_ad_slot', 'custom') == 'custom') {
+        $ad_slot = variable_get('onscroll_code');
+      }
+      else {
+        if (module_exists('dfp')) {
+          $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
+          $ad_slot .= '
+
+                  <script type="text/javascript">
+                                  googletag.defineSlot("/359/autoexpress.co.uk", [[300, 250], [300, 600]], "dfp-ad-mpu_2")
+                                    .addService(googletag.pubads())
+                                    .setTargeting("position", "2");
+                  </script>
+
+                  <script type="text/javascript">
+                                  googletag.cmd.push(function() {
+                                    googletag.pubads().enableAsyncRendering();
+                                    googletag.pubads().enableSingleRequest();
+                                    googletag.pubads().collapseEmptyDivs();
+                                    googletag.pubads().setTargeting("zone", "homepage");
+                                    googletag.pubads().setTargeting("live", "yes");
+                                    googletag.pubads().setTargeting("ord", "8335801736");
+                                  });
+                                  googletag.enableServices();
+                  </script>
+
+                  <div id="dfp-ad-mpu_2" class="dfp-tag-wrapper">
+                                  <script type="text/javascript">
+                                                      googletag.cmd.push(function() {
+                                                                                  googletag.display("dfp-ad-mpu_2");
+                                                      });
+                                                  </script>
+                  </div>';
+        }
+      }
+
       $script = 'var onScrOll=new Object();' . PHP_EOL;
-      $script .= 'onScrOll.code="' . variable_get('onscroll_code', '') . '";';
-      $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600) . ';';
-      $script .= 'onScrOll.marginTop=' . variable_get('onscroll_margin_top', 10) . ';';
-      $script .= 'onScrOll.mode="' . variable_get('onscroll_mode', 'sticky') . '";';
-      $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250) . ';';
-      $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300) . ';';
-      $script .= 'onScrOll.reload=' . ((variable_get('onscroll_reload', FALSE) == FALSE) ? 'false' : 'true') . ';';
+      $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
+      $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600) . ';' . PHP_EOL;
+      $script .= 'onScrOll.marginTop=' . variable_get('onscroll_margin_top', 10) . ';' . PHP_EOL;
+      $script .= 'onScrOll.mode="' . variable_get('onscroll_mode', 'sticky') . '";' . PHP_EOL;
+      $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250) . ';' . PHP_EOL;
+      $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300) . ';' . PHP_EOL;
+      $script .= 'onScrOll.reload=' . ((variable_get('onscroll_reload', FALSE) == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
       drupal_add_js($script, array('scope' => 'footer', 'type' => 'inline'));
 
       // Add external script.

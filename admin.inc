@@ -29,32 +29,52 @@ function onscroll_admin_settings_form() {
     '#default_value' => variable_get('onscroll_url', ONSCROLL_URL),
   );
 
+  $dfp_description = '';
+  $options =  array('custom' => t('Custom'));
+  if (module_exists('dfp')) {
+    $dfp_description = ' ' . t('Or you can choose one of the DFP slots.');
+    $tags = dfp_tag_load_all();
+    foreach ($tags as $tag) {
+      $options[$tag->machinename] = $tag->slot;
+    }
+  }
+  $form['global']['onscroll_ad_slot'] = array(
+    '#type' => 'select',
+    '#title' => t('Ad slot'),
+    '#options' => $options,
+    '#default_value' => variable_get('onscroll_ad_slot', $options[0]),
+    '#description' => t('You can paste the Ad code here.') . $dfp_description,
+  );
+
   $form['global']['onscroll_code'] = array(
     '#type' => 'textarea',
     '#title' => t('OnScroll Code'),
     '#description' => t('The 64bit code provided by OnScroll'),
-    '#default_value' => variable_get('onscroll_code', ONSCROLL_CODE),
+    '#default_value' => variable_get('onscroll_code'),
+    '#states' => array(
+      'visible' => array('select[name="onscroll_ad_slot"]' => array('value' => 'custom')),
+    ),
   );
 
   $form['global']['onscroll_campaign_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Campaign Id'),
     '#size' => '25',
-    '#default_value' => variable_get('onscroll_campaign_id', ''),
+    '#default_value' => variable_get('onscroll_campaign_id'),
   );
 
   $form['global']['onscroll_creative_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Creative Id'),
     '#size' => '25',
-    '#default_value' => variable_get('onscroll_creative_id', ''),
+    '#default_value' => variable_get('onscroll_creative_id'),
   );
 
   $form['global']['onscroll_account_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Account Id'),
     '#size' => '25',
-    '#default_value' => variable_get('onscroll_account_id', ''),
+    '#default_value' => variable_get('onscroll_account_id'),
   );
 
   $form['options'] = array(
