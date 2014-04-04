@@ -41,9 +41,10 @@ function onscroll_help($path, $arg) {
 }
 
 /**
- * Implements preprocess_html().
+ * Get the onscroll block content.
  */
-function onscroll_preprocess_html($variables) {
+function _onscroll_get_block_content() {
+  $onscroll_content = array();
   if (!path_is_admin(current_path())) {
     if (variable_get('onscroll_enabled')) {
       // Add inline script.
@@ -75,8 +76,10 @@ function onscroll_preprocess_html($variables) {
           $ad_slot .= $slot;
         }
       }
+      
 
-      $script = 'var onScrOll=new Object();' . PHP_EOL;
+      $script = '<script type="text/javascript">';
+      $script .= 'var onScrOll=new Object();' . PHP_EOL;
       $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
       $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600) . ';' . PHP_EOL;
       $script .= 'onScrOll.marginTop=' . variable_get('onscroll_margin_top', 10) . ';' . PHP_EOL;
@@ -84,14 +87,44 @@ function onscroll_preprocess_html($variables) {
       $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250) . ';' . PHP_EOL;
       $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300) . ';' . PHP_EOL;
       $script .= 'onScrOll.reload=' . ((variable_get('onscroll_reload', FALSE) == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
-      drupal_add_js($script, array('scope' => 'footer', 'type' => 'inline'));
+      $script .= '</script>';
+      $onscroll_content[] = $script;
 
       // Add external script.
-      $script = variable_get('onscroll_url', ONSCROLL_URL);
+      $script = '<script type="text/javascript" src="';
+      $script .= variable_get('onscroll_url', ONSCROLL_URL);
       $script .= '?campaignId=' . variable_get('onscroll_campaign_id');
       $script .= '&creativeId=' . variable_get('onscroll_creative_id');
       $script .= '&accountId=' . variable_get('onscroll_account_id');
-      drupal_add_js($script, array('scope' => 'footer', 'type' => 'external'));
+      $script .= '"></script>';
+      $onscroll_content[] = $script;
     }
   }
+  return implode('', $onscroll_content);
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function onscroll_block_info() {
+  $blocks['onscroll'] = array(
+    'info' => t('OnScroll'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  return $blocks;
+}
+
+/**
+* Implements hook_block_view().
+*/
+function onscroll_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'onscroll':
+      $block['content'] = _onscroll_get_block_content();
+      break;
+  }
+
+  return $block;
 }
