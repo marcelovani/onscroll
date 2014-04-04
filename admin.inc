@@ -49,7 +49,7 @@ function onscroll_admin_settings_form() {
   $form['global']['onscroll_code'] = array(
     '#type' => 'textarea',
     '#title' => t('OnScroll Code'),
-    '#description' => t('The 64bit code provided by OnScroll'),
+    '#description' => t('Paste the Ad code here.'),
     '#default_value' => variable_get('onscroll_code'),
     '#states' => array(
       'visible' => array('select[name="onscroll_ad_slot"]' => array('value' => 'custom')),

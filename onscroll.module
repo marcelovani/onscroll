@@ -59,6 +59,7 @@ function onscroll_preprocess_html($variables) {
           foreach (drupal_add_js() as $key => $value) {
             if (is_numeric($key)) {
               if (strpos($value['data'], 'googletag') !== FALSE) {
+                print_r(strpos($value['data']));
                 if (strpos($value['data'], 'googletag.slots') !== FALSE) {
                   //@todo grab the actual themed machine name
                   if (strpos($value['data'], variable_get('onscroll_ad_slot')) !== FALSE) {
