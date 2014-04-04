@@ -47,62 +47,32 @@ function onscroll_preprocess_html($variables) {
   if (!path_is_admin(current_path())) {
     if (variable_get('onscroll_enabled')) {
       // Add inline script.
-      debug("1");
       $ad_slot = '';
       if (variable_get('onscroll_ad_slot', 'custom') == 'custom') {
         $ad_slot = variable_get('onscroll_code');
       }
       else {
         if (module_exists('dfp')) {
+          $tag = dfp_tag(variable_get('onscroll_ad_slot'));
+          $slot = render($tag);
+
           $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
 
           foreach (drupal_add_js() as $key => $value) {
             if (is_numeric($key)) {
-              if (strpos($value['data'], 'googletag') !== FALSE) {
-                print_r(strpos($value['data']));
-                if (strpos($value['data'], 'googletag.slots') !== FALSE) {
-                  //@todo grab the actual themed machine name
-                  if (strpos($value['data'], variable_get('onscroll_ad_slot')) !== FALSE) {
-                    $ad_slot .= $value['data'] . PHP_EOL;
+              if (strstr($value['data'], 'googletag')) {
+                if (strstr($value['data'], 'googletag.slots')) {
+                  if (strstr($value['data'], variable_get('onscroll_ad_slot'))) {
+                    $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
                   }
                 }
                 else {
-                  $ad_slot .= $value['data'] . PHP_EOL;
+                  $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
                 }
               }
             }
           }
-//          krumo(drupal_add_js(NULL, $options), drupal_get_js());
-          $ad_slot .= render(dfp_tag(variable_get('onscroll_ad_slot')));
-          /*
-                    $ad_slot .= '
-
-                            <script type="text/javascript">
-                                            googletag.defineSlot("/359/autoexpress.co.uk", [[300, 250], [300, 600]], "dfp-ad-mpu_2")
-                                              .addService(googletag.pubads())
-                                              .setTargeting("position", "2");
-                            </script>
-
-                            <script type="text/javascript">
-                                            googletag.cmd.push(function() {
-                                              googletag.pubads().enableAsyncRendering();
-                                              googletag.pubads().enableSingleRequest();
-                                              googletag.pubads().collapseEmptyDivs();
-                                              googletag.pubads().setTargeting("zone", "homepage");
-                                              googletag.pubads().setTargeting("live", "yes");
-                                              googletag.pubads().setTargeting("ord", "8335801736");
-                                            });
-                                            googletag.enableServices();
-                            </script>
-
-                            <div id="dfp-ad-mpu_2" class="dfp-tag-wrapper">
-                                            <script type="text/javascript">
-                                                                googletag.cmd.push(function() {
-                                                                                            googletag.display("dfp-ad-mpu_2");
-                                                                });
-                                                            </script>
-                            </div>';
-          */
+          $ad_slot .= $slot;
         }
       }
 
@@ -114,8 +84,6 @@ function onscroll_preprocess_html($variables) {
       $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250) . ';' . PHP_EOL;
       $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300) . ';' . PHP_EOL;
       $script .= 'onScrOll.reload=' . ((variable_get('onscroll_reload', FALSE) == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
-      echo '<pre>';
-      print_r($ad_slot);
       drupal_add_js($script, array('scope' => 'footer', 'type' => 'inline'));
 
       // Add external script.
