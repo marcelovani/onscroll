@@ -14,9 +14,10 @@ function onscroll_permission() {
 }
 
 /**
- * Implements process_html().
+ * Implements hook_process_html().
  */
 function onscroll_process_html(&$variables) {
+  // Swap placeholder comment with OnScroll content.
   $variables['page'] = str_replace('<!-- OnScrollPlaceholder -->', _onscroll_get_block_content(), $variables['page']);
 }
 
@@ -61,12 +62,12 @@ function _onscroll_get_block_content() {
       }
       else {
         if (module_exists('dfp')) {
+          // Render the tag first so that the JS is available in drupal_add_js().
           $tag = dfp_tag(variable_get('onscroll_ad_slot'));
-          $slot = render($tag);
+          $rendered_tag = render($tag);
 
           $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
 
-          // @todo remove onscroll ad slot JS from head of page.
           foreach (drupal_add_js() as $key => $value) {
             if (is_numeric($key)) {
               if (strstr($value['data'], 'googletag')) {
@@ -81,7 +82,7 @@ function _onscroll_get_block_content() {
               }
             }
           }
-          $ad_slot .= $slot;
+          $ad_slot .= $rendered_tag;
         }
       }
 
@@ -129,6 +130,7 @@ function onscroll_block_view($delta = '') {
 
   switch ($delta) {
     case 'onscroll':
+      // Add a placeholder to be replaced in hook_process_html().
       $block['content'] = '<!-- OnScrollPlaceholder -->';
       break;
   }
