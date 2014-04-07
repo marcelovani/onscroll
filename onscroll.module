@@ -14,11 +14,10 @@ function onscroll_permission() {
 }
 
 /**
- * Implements hook_process_html().
+ * Implements hook_preprocess_html().
  */
-function onscroll_process_html(&$variables) {
-  // Swap placeholder comment with OnScroll content.
-  $variables['page'] = str_replace('<!-- OnScrollPlaceholder -->', _onscroll_get_block_content(), $variables['page']);
+function onscroll_preprocess_html(&$variables) {
+  _onscroll_add_script();
 }
 
 /**
@@ -51,7 +50,7 @@ function onscroll_help($path, $arg) {
 /**
  * Get the onscroll block content.
  */
-function _onscroll_get_block_content() {
+function _onscroll_add_script() {
   $onscroll_content = array();
   if (!path_is_admin(current_path())) {
     if (variable_get('onscroll_enabled')) {
@@ -86,8 +85,9 @@ function _onscroll_get_block_content() {
         }
       }
 
-      $script = '<script type="text/javascript">';
-      $script .= 'var onScrOll=new Object();' . PHP_EOL;
+      // Add onscroll configuration.
+      $script = 'var onScrOll=new Object();' . PHP_EOL;
+      $script .= 'onScrOll.placeholder="onscroll-container";' . PHP_EOL;
       $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
       $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600) . ';' . PHP_EOL;
       $script .= 'onScrOll.marginTop=' . variable_get('onscroll_margin_top', 10) . ';' . PHP_EOL;
@@ -95,20 +95,16 @@ function _onscroll_get_block_content() {
       $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250) . ';' . PHP_EOL;
       $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300) . ';' . PHP_EOL;
       $script .= 'onScrOll.reload=' . ((variable_get('onscroll_reload', FALSE) == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
-      $script .= '</script>';
-      $onscroll_content[] = $script;
+      drupal_add_js($script, array('scope' => 'footer', 'type' => 'inline'));
 
       // Add external script.
-      $script = '<script type="text/javascript" src="';
-      $script .= variable_get('onscroll_url', ONSCROLL_URL);
+      $script = variable_get('onscroll_url', ONSCROLL_URL);
       $script .= '?campaignId=' . variable_get('onscroll_campaign_id');
       $script .= '&creativeId=' . variable_get('onscroll_creative_id');
       $script .= '&accountId=' . variable_get('onscroll_account_id');
-      $script .= '"></script>';
-      $onscroll_content[] = $script;
+      drupal_add_js($script, array('scope' => 'footer', 'type' => 'external'));
     }
   }
-  return implode('', $onscroll_content);
 }
 
 /**
@@ -130,8 +126,8 @@ function onscroll_block_view($delta = '') {
 
   switch ($delta) {
     case 'onscroll':
-      // Add a placeholder to be replaced in hook_process_html().
-      $block['content'] = '<!-- OnScrollPlaceholder -->';
+      // Block to position the onscroll ad.
+      $block['content'] ='<div id="onscroll-container"></div>';
       break;
   }
 
