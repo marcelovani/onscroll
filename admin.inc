@@ -20,13 +20,13 @@ function onscroll_admin_settings_form() {
   $form['global']['onscroll_enabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('OnScroll Enabled'),
-    '#default_value' => variable_get('onscroll_enabled', FALSE),
+    '#default_value' => _onscroll_variable_get('onscroll_enabled'),
   );
 
   $form['global']['onscroll_url'] = array(
     '#type' => 'textfield',
     '#title' => t('OnScroll URL'),
-    '#default_value' => variable_get('onscroll_url', ONSCROLL_URL),
+    '#default_value' => _onscroll_variable_get('onscroll_url'),
   );
 
   $dfp_description = '';
@@ -42,7 +42,7 @@ function onscroll_admin_settings_form() {
     '#type' => 'select',
     '#title' => t('Ad slot'),
     '#options' => $options,
-    '#default_value' => variable_get('onscroll_ad_slot', $options[0]),
+    '#default_value' => _onscroll_variable_get('onscroll_ad_slot'),
     '#description' => t('You can paste the Ad code here.') . $dfp_description,
   );
 
@@ -50,7 +50,7 @@ function onscroll_admin_settings_form() {
     '#type' => 'textarea',
     '#title' => t('OnScroll Code'),
     '#description' => t('Paste the Ad code here.'),
-    '#default_value' => variable_get('onscroll_code'),
+    '#default_value' => _onscroll_variable_get('onscroll_code'),
     '#states' => array(
       'visible' => array('select[name="onscroll_ad_slot"]' => array('value' => 'custom')),
     ),
@@ -60,21 +60,21 @@ function onscroll_admin_settings_form() {
     '#type' => 'textfield',
     '#title' => t('Campaign Id'),
     '#size' => '25',
-    '#default_value' => variable_get('onscroll_campaign_id'),
+    '#default_value' => _onscroll_variable_get('onscroll_campaign_id'),
   );
 
   $form['global']['onscroll_creative_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Creative Id'),
     '#size' => '25',
-    '#default_value' => variable_get('onscroll_creative_id'),
+    '#default_value' => _onscroll_variable_get('onscroll_creative_id'),
   );
 
   $form['global']['onscroll_account_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Account Id'),
     '#size' => '25',
-    '#default_value' => variable_get('onscroll_account_id'),
+    '#default_value' => _onscroll_variable_get('onscroll_account_id'),
   );
 
   $form['options'] = array(
@@ -91,7 +91,7 @@ function onscroll_admin_settings_form() {
       'sticky_reappearing' => t('Sticky Reappearing'),
       'sticky_dual' => t('Sticky Dual'),
     ),
-    '#default_value' => variable_get('onscroll_mode', 'sticky'),
+    '#default_value' => _onscroll_variable_get('onscroll_mode'),
   );
 
   $form['options']['onscroll_interval'] = array(
@@ -99,13 +99,13 @@ function onscroll_admin_settings_form() {
     '#title' => t('Interval'),
     '#maxlength' => 4,
     '#size' => 4,
-    '#default_value' => variable_get('onscroll_interval', '30'),
+    '#default_value' => _onscroll_variable_get('onscroll_interval'),
   );
 
   $form['options']['onscroll_reload'] = array(
     '#type' => 'checkbox',
     '#title' => t('Reload'),
-    '#default_value' => variable_get('onscroll_reload', FALSE),
+    '#default_value' => _onscroll_variable_get('onscroll_reload'),
   );
 
   $form['dimensions'] = array(
@@ -118,7 +118,7 @@ function onscroll_admin_settings_form() {
     '#title' => t('Margin'),
     '#maxlength' => 4,
     '#size' => 4,
-    '#default_value' => variable_get('onscroll_margin', '605'),
+    '#default_value' => _onscroll_variable_get('onscroll_margin'),
   );
 
   $form['dimensions']['onscroll_margin_top'] = array(
@@ -126,7 +126,7 @@ function onscroll_admin_settings_form() {
     '#title' => t('Top margin'),
     '#maxlength' => 4,
     '#size' => 4,
-    '#default_value' => variable_get('onscroll_margin_top', '10'),
+    '#default_value' => _onscroll_variable_get('onscroll_margin_top'),
   );
 
   $form['dimensions']['onscroll_height'] = array(
@@ -134,7 +134,7 @@ function onscroll_admin_settings_form() {
     '#title' => t('Height (Pixels)'),
     '#maxlength' => 4,
     '#size' => 4,
-    '#default_value' => variable_get('onscroll_height', '600'),
+    '#default_value' => _onscroll_variable_get('onscroll_height'),
   );
 
   $form['dimensions']['onscroll_width'] = array(
@@ -142,7 +142,7 @@ function onscroll_admin_settings_form() {
     '#title' => t('Width (Pixels)'),
     '#maxlength' => 4,
     '#size' => 4,
-    '#default_value' => variable_get('onscroll_width', '300'),
+    '#default_value' => _onscroll_variable_get('onscroll_width'),
   );
 
   return system_settings_form($form);

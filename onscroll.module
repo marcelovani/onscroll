@@ -2,6 +2,39 @@
 define('ONSCROLL_URL', 'http://cdn.onscroll.com/onscroll.ms.js');
 
 /**
+ * Variable defaults.
+ */
+function _onscroll_variable_defaults() {
+  return array(
+    'onscroll_url' => ONSCROLL_URL,
+    'onscroll_enabled' => FALSE,
+    'onscroll_ad_slot' => 'custom',
+    'onscroll_margin' => 600,
+    'onscroll_margin_top' => 10,
+    'onscroll_mode' => 'sticky',
+    'onscroll_height' => 250,
+    'onscroll_width' => 300,
+    'onscroll_reload' => FALSE,
+    'onscroll_interval' => 30,
+    'onscroll_campaign_id' => '',
+    'onscroll_creative_id' => '',
+    'onscroll_account_id' => '',
+    'onscroll_code' => '',
+  );
+}
+
+/**
+ * Get variable.
+ * 
+ * @param $name
+ */
+function _onscroll_variable_get($name) {
+  $defaults = _onscroll_variable_defaults();
+  $default = isset($defaults[$name]) ? $defaults[$name] : NULL;
+  return variable_get($name, $default);
+}
+
+/**
  * Implements hook_permission().
  */
 function onscroll_permission() {
@@ -11,6 +44,21 @@ function onscroll_permission() {
       'description' => t('Administer account settings and visibility of onscroll on your site.'),
     ),
   );
+}
+
+/**
+ * Implements hook_js_alter().
+ */
+function onscroll_js_alter(&$javascript) {
+  // Remove the OnScroll ad slot.
+  // This is included in the base64 encoded onscroll script.
+  foreach ($javascript as $key => $value) {
+    if (isset($value['data'])) {
+      if (strstr($value['data'], 'googletag.slots') && strstr($value['data'], _onscroll_variable_get('onscroll_ad_slot'))) {
+        unset($javascript[$key]);
+      }
+    }
+  }
 }
 
 /**
@@ -53,16 +101,16 @@ function onscroll_help($path, $arg) {
 function _onscroll_add_script() {
   $onscroll_content = array();
   if (!path_is_admin(current_path())) {
-    if (variable_get('onscroll_enabled')) {
+    if (_onscroll_variable_get('onscroll_enabled')) {
       // Add inline script.
       $ad_slot = '';
-      if (variable_get('onscroll_ad_slot', 'custom') == 'custom') {
-        $ad_slot = variable_get('onscroll_code');
+      if (_onscroll_variable_get('onscroll_ad_slot') == 'custom') {
+        $ad_slot = _onscroll_variable_get('onscroll_code');
       }
       else {
         if (module_exists('dfp')) {
           // Render the tag first so that the JS is available in drupal_add_js().
-          $tag = dfp_tag(variable_get('onscroll_ad_slot'));
+          $tag = dfp_tag(_onscroll_variable_get('onscroll_ad_slot'));
           $rendered_tag = render($tag);
 
           $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
@@ -71,7 +119,7 @@ function _onscroll_add_script() {
             if (is_numeric($key)) {
               if (strstr($value['data'], 'googletag')) {
                 if (strstr($value['data'], 'googletag.slots')) {
-                  if (strstr($value['data'], variable_get('onscroll_ad_slot'))) {
+                  if (strstr($value['data'], _onscroll_variable_get('onscroll_ad_slot'))) {
                     $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
                   }
                 }
@@ -89,19 +137,19 @@ function _onscroll_add_script() {
       $script = 'var onScrOll=new Object();' . PHP_EOL;
       $script .= 'onScrOll.placeholder="onscroll-container";' . PHP_EOL;
       $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
-      $script .= 'onScrOll.margin=' . variable_get('onscroll_margin', 600) . ';' . PHP_EOL;
-      $script .= 'onScrOll.marginTop=' . variable_get('onscroll_margin_top', 10) . ';' . PHP_EOL;
-      $script .= 'onScrOll.mode="' . variable_get('onscroll_mode', 'sticky') . '";' . PHP_EOL;
-      $script .= 'onScrOll.height=' . variable_get('onscroll_height', 250) . ';' . PHP_EOL;
-      $script .= 'onScrOll.width=' . variable_get('onscroll_width', 300) . ';' . PHP_EOL;
-      $script .= 'onScrOll.reload=' . ((variable_get('onscroll_reload', FALSE) == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
+      $script .= 'onScrOll.margin=' . _onscroll_variable_get('onscroll_margin') . ';' . PHP_EOL;
+      $script .= 'onScrOll.marginTop=' . _onscroll_variable_get('onscroll_margin_top') . ';' . PHP_EOL;
+      $script .= 'onScrOll.mode="' . _onscroll_variable_get('onscroll_mode') . '";' . PHP_EOL;
+      $script .= 'onScrOll.height=' . _onscroll_variable_get('onscroll_height') . ';' . PHP_EOL;
+      $script .= 'onScrOll.width=' . _onscroll_variable_get('onscroll_width') . ';' . PHP_EOL;
+      $script .= 'onScrOll.reload=' . ((_onscroll_variable_get('onscroll_reload') == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
       drupal_add_js($script, array('scope' => 'footer', 'type' => 'inline'));
 
       // Add external script.
-      $script = variable_get('onscroll_url', ONSCROLL_URL);
-      $script .= '?campaignId=' . variable_get('onscroll_campaign_id');
-      $script .= '&creativeId=' . variable_get('onscroll_creative_id');
-      $script .= '&accountId=' . variable_get('onscroll_account_id');
+      $script = _onscroll_variable_get('onscroll_url');
+      $script .= '?campaignId=' . _onscroll_variable_get('onscroll_campaign_id');
+      $script .= '&creativeId=' . _onscroll_variable_get('onscroll_creative_id');
+      $script .= '&accountId=' . _onscroll_variable_get('onscroll_account_id');
       drupal_add_js($script, array('scope' => 'footer', 'type' => 'external'));
     }
   }

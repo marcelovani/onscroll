@@ -18,6 +18,7 @@ function onscroll_uninstall() {
     'onscroll_width',
     'onscroll_interval',
     'onscroll_reload',
+    'onscroll_code',
   );
   foreach ($variables as $name) {
     variable_del($name);
