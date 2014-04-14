@@ -132,6 +132,7 @@ function _onscroll_add_script() {
           $ad_slot .= $rendered_tag;
         }
       }
+      $ad_slot .= '<script src="http://cdn.onscroll.com/ms.os.js"></script>';
 
       // Add onscroll configuration.
       $script = 'var onScrOll=new Object();' . PHP_EOL;
