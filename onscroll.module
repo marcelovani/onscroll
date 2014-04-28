@@ -120,7 +120,7 @@ function _onscroll_get_js() {
         foreach (drupal_add_js() as $key => $value) {
           if (is_numeric($key)) {
             if (strstr($value['data'], 'googletag')) {
-              if (strpos($value['data'], 'googletag.slots') == 0) {
+              if (strpos($value['data'], 'googletag.slots') === 0) {
                 if (strstr($value['data'], _onscroll_variable_get('onscroll_ad_slot'))) {
                   // Add only onscroll slot definition
                   $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
