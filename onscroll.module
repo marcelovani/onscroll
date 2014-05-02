@@ -48,21 +48,6 @@ function onscroll_permission() {
 }
 
 /**
- * Implements hook_js_alter().
- */
-function onscroll_js_alter(&$javascript) {
-  // Remove the OnScroll ad slot.
-  // This is included in the base64 encoded onscroll script.
-  foreach ($javascript as $key => $value) {
-    if (isset($value['data'])) {
-      if (strstr($value['data'], 'googletag.slots') && strstr($value['data'], _onscroll_variable_get('onscroll_ad_slot'))) {
-        unset($javascript[$key]);
-      }
-    }
-  }
-}
-
-/**
  * Implements hook_process_html().
  */
 function onscroll_process_html(&$variables) {
