@@ -119,6 +119,12 @@ function _onscroll_get_js() {
           }
         }
         $ad_slot .= $rendered_tag;
+        
+        // Load the ads even if "initial ad load" from dfp module
+        // is disabled in order get response from onscroll.com .
+        if (variable_get('dfp_disable_init_load', 1)) {
+          $ad_slot = str_ireplace('googletag.pubads().disableInitialLoad();', '', $ad_slot);
+        }
       }
     }
     $ad_slot .= '<script src="http://cdn.onscroll.com/ms.os.js"></script>';
