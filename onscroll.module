@@ -102,24 +102,23 @@ function _onscroll_get_js() {
         $tag = dfp_tag(_onscroll_variable_get('onscroll_ad_slot'));
         $rendered_tag = render($tag);
         $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
+        $pieces = array(
+          'googletag\.slots\[\"' . _onscroll_variable_get('onscroll_ad_slot') . '\"\]\s*=\s*googletag\.defineSlot\(',
+          'var googletag\s*=\s*googletag\s.',
+          'googletag\.enableServices\(',
+        );
+        $pattern = '/' . implode('|', $pieces) . '/';
+
         foreach (drupal_add_js() as $key => $value) {
-          if (is_numeric($key)) {
-            if (strstr($value['data'], 'googletag')) {
-              if (strpos($value['data'], 'googletag.slots') === 0) {
-                if (strstr($value['data'], _onscroll_variable_get('onscroll_ad_slot'))) {
-                  // Add only onscroll slot definition
-                  $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
-                }
-              }
-              else {
-                // Add other googletag related JS
-                $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
-              }
+          if (is_numeric($key) && strstr($value['data'], 'googletag')) {
+            // Add only dfp and onscroll related gpt code.
+            if (preg_match($pattern, $value['data'])) {
+              $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
             }
           }
         }
         $ad_slot .= $rendered_tag;
-        
+
         // Load the ads even if "initial ad load" from dfp module
         // is disabled in order get response from onscroll.com .
         if (variable_get('dfp_disable_init_load', 1)) {
