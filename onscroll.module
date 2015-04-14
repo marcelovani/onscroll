@@ -106,15 +106,20 @@ function _onscroll_get_js() {
         'googletag\.slots\[\"' . _onscroll_variable_get('onscroll_ad_slot') . '\"\]\s*=\s*googletag\.defineSlot\(',
         'googletag\.enableServices\(',
       );
+      $pattern = '/' . implode('|', $pieces) . '/';
 
       // Check for needed JavaScript respecting the key order from $pieces.
       foreach (drupal_add_js() as $key => $value) {
         if (is_numeric($key) && strstr($value['data'], 'googletag')) {
+          if (!preg_match($pattern, $value['data'])) {
+            continue;
+          }
           // Loop again to order the slots.
           foreach ($pieces as $key => $individual_pattern) {
             // Add only dfp and onscroll related gpt code.
             if (preg_match('/' . $individual_pattern . '/', $value['data'])) {
               $matched_ad_slots[$key] = $value['data'];
+              break 1;
             }
           }
         }
