@@ -89,6 +89,9 @@ function onscroll_help($path, $arg) {
 /**
  * Get the onscroll block content.
  */
+/**
+ * Get the onscroll block content.
+ */
 function _onscroll_get_js() {
   if (!path_is_admin(current_path()) && _onscroll_variable_get('onscroll_enabled')) {
     // Add inline script.
@@ -96,34 +99,42 @@ function _onscroll_get_js() {
     if (_onscroll_variable_get('onscroll_ad_slot') == 'custom') {
       $ad_slot = _onscroll_variable_get('onscroll_code');
     }
-    else {
-      if (module_exists('dfp')) {
-        // Render the tag first so that the JS is available in drupal_add_js().
-        $tag = dfp_tag(_onscroll_variable_get('onscroll_ad_slot'));
-        $rendered_tag = render($tag);
-        $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
-        $pieces = array(
-          'googletag\.slots\[\"' . _onscroll_variable_get('onscroll_ad_slot') . '\"\]\s*=\s*googletag\.defineSlot\(',
-          'var googletag\s*=\s*googletag\s.',
-          'googletag\.enableServices\(',
-        );
-        $pattern = '/' . implode('|', $pieces) . '/';
+    elseif (module_exists('dfp')) {
+      // Render the tag first so that the JS is available in drupal_add_js().
+      $tag = dfp_tag(_onscroll_variable_get('onscroll_ad_slot'));
+      $rendered_tag = render($tag);
+      $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
+      $pieces = array(
+        'var googletag\s*=\s*googletag\s.',
+        'googletag\.slots\[\"' . _onscroll_variable_get('onscroll_ad_slot') . '\"\]\s*=\s*googletag\.defineSlot\(',
+        'googletag\.enableServices\(',
+      );
 
-        foreach (drupal_add_js() as $key => $value) {
-          if (is_numeric($key) && strstr($value['data'], 'googletag')) {
+      // Check for needed JavaScript respecting the key order from $pieces.
+      foreach (drupal_add_js() as $key => $value) {
+        if (is_numeric($key) && strstr($value['data'], 'googletag')) {
+          // Loop again to order the slots.
+          foreach ($pieces as $key => $individual_pattern) {
             // Add only dfp and onscroll related gpt code.
-            if (preg_match($pattern, $value['data'])) {
-              $ad_slot .= '<script type="text/javascript">' . $value['data'] . '</script>' . PHP_EOL;
+            if (preg_match('/' . $individual_pattern . '/', $value['data'])) {
+              $matched_ad_slots[$key] = $value['data'];
             }
           }
         }
-        $ad_slot .= $rendered_tag;
+      }
 
-        // Load the ads even if "initial ad load" from dfp module
-        // is disabled in order get response from onscroll.com .
-        if (variable_get('dfp_disable_init_load', 1)) {
-          $ad_slot = str_ireplace('googletag.pubads().disableInitialLoad();', '', $ad_slot);
-        }
+      // Sort the array and append values as separate script.
+      ksort($matched_ad_slots);
+      foreach ($matched_ad_slots as $ad_slot_value) {
+        $ad_slot .= '<script type="text/javascript">' . $ad_slot_value . '</script>' . PHP_EOL;
+      }
+
+      $ad_slot .= $rendered_tag;
+
+      // Load the ads even if "initial ad load" from dfp module
+      // is disabled in order get response from onscroll.com .
+      if (variable_get('dfp_disable_init_load', 1)) {
+        $ad_slot = str_ireplace('googletag.pubads().disableInitialLoad();', '', $ad_slot);
       }
     }
     $ad_slot .= '<script src="http://cdn.onscroll.com/ms.os.js"></script>';
