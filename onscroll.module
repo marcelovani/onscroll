@@ -89,9 +89,6 @@ function onscroll_help($path, $arg) {
 /**
  * Get the onscroll block content.
  */
-/**
- * Get the onscroll block content.
- */
 function _onscroll_get_js() {
   if (!path_is_admin(current_path()) && _onscroll_variable_get('onscroll_enabled')) {
     // Add inline script.
