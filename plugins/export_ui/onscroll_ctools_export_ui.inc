@@ -160,53 +160,54 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
 //  $form['options']['interval'] = array(
 //    '#type' => 'textfield',
 //    '#title' => t('Interval'),
-//    '#maxlength' => 4,
-//    '#size' => 4,
+//   // '#maxlength' => 4,
+//   // '#size' => 4,
 //    '#default_value' => $tag->interval,
 //  );
 
-//  $form['options']['reload'] = array(
-//    '#type' => 'checkbox',
-//    '#title' => t('Reload'),
-//    '#default_value' => $tag->reload,
-//  );
-//
-//  $form['dimensions'] = array(
-//    '#type' => 'fieldset',
-//    '#title' => t('Dimensions'),
-//  );
-//
-//  $form['dimensions']['margin'] = array(
-//    '#type' => 'textfield',
-//    '#title' => t('Margin'),
-//    '#maxlength' => 4,
-//    '#size' => 4,
-//    '#default_value' => $tag->margin,
-//  );
-//
-//  $form['dimensions']['margin_top'] = array(
-//    '#type' => 'textfield',
-//    '#title' => t('Top margin'),
-//    '#maxlength' => 4,
-//    '#size' => 4,
-//    '#default_value' => $tag->margin_top,
-//  );
-//
-//  $form['dimensions']['height'] = array(
-//    '#type' => 'textfield',
-//    '#title' => t('Height (Pixels)'),
-//    '#maxlength' => 4,
-//    '#size' => 4,
-//    '#default_value' => $tag->height,
-//  );
-//
-//  $form['dimensions']['width'] = array(
-//    '#type' => 'textfield',
-//    '#title' => t('Width (Pixels)'),
-//    '#maxlength' => 4,
-//    '#size' => 4,
-//    '#default_value' => $tag->width,
-//  );
+
+  $form['options']['reload'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Reload'),
+    '#default_value' => $tag->reload,
+  );
+
+  $form['dimensions'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Dimensions'),
+  );
+
+  $form['dimensions']['margin'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Margin'),
+    '#maxlength' => 4,
+    '#size' => 4,
+    '#default_value' => $tag->margin,
+  );
+
+  $form['dimensions']['margin_top'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Top margin'),
+    '#maxlength' => 4,
+    '#size' => 4,
+    '#default_value' => $tag->margin_top,
+  );
+
+  $form['dimensions']['height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height (Pixels)'),
+    '#maxlength' => 4,
+    '#size' => 4,
+    '#default_value' => $tag->height,
+  );
+
+  $form['dimensions']['width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width (Pixels)'),
+    '#maxlength' => 4,
+    '#size' => 4,
+    '#default_value' => $tag->width,
+  );
 
 }
 

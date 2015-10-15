@@ -63,14 +63,14 @@ function onscroll_process_html(&$variables) {
  * Implements hook_menu().
  */
 function onscroll_menu() {
-  $items['admin/config/system/onscroll'] = array(
+  $items['admin/config/system/onscroll-settings'] = array(
     'title' => 'OnScroll',
     'description' => 'Configure onscroll blocks on your website.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('onscroll_admin_settings_form'),
     'access arguments' => array('administer onscroll'),
     'type' => MENU_NORMAL_ITEM,
-    'file' => 'admin.inc',
+    'file' => 'onscroll.admin.inc',
   );
 
   return $items;
@@ -98,7 +98,7 @@ function _onscroll_get_js() {
     }
     elseif (module_exists('dfp')) {
       // Render the tag first so that the JS is available in drupal_add_js().
-      $tag = dfp_tag(_onscroll_variable_get('onscroll_ad_slot'));
+      $tag = dfp_tag(_dfp_variable_get('dfp_ad_slot'));
       $rendered_tag = render($tag);
       $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
       $pieces = array(
@@ -194,4 +194,64 @@ function onscroll_block_view($delta = '') {
   }
 
   return $block;
+}
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function onscroll_ctools_plugin_directory($module, $type) {
+  // Load the export_ui plugin.
+  if ($type == 'export_ui') {
+    return 'plugins/export_ui';
+  }
+}
+
+
+/**
+ * Load all dfp ad tags.
+ *
+ * @param boolean $include_disabled
+ *
+ * @return array of tags.
+ */
+function onscroll_tag_load_all($include_disabled = FALSE) {
+  ctools_include('export');
+
+  $tags = ctools_export_crud_load_all('onscroll_tags');
+  foreach ($tags as $key => $tag) {
+    if (!$include_disabled && isset($tag->disabled) && $tag->disabled) {
+      unset($tags[$key]);
+    }
+  }
+
+  return $tags;
+}
+
+/**
+ * Save a single tag.
+ */
+function onscroll_tag_save(&$tag) {
+  print_r($tag);
+  $update = (isset($tag->adid) && is_numeric($tag->adid)) ? array('adid') : array();
+  exit();
+  return drupal_write_record('onscroll_tags', $tag, $update);
+}
+
+/**
+ * Alter a dfp tag object to integrate with the contexts module.
+ */
+function onscroll_onscroll_tag_load_alter(&$tag) {
+  // Execute context reactions for each plugin.
+  if (module_exists('context')) {
+    $contexts = onscroll_context_registry();
+    foreach ($contexts['reactions'] as $key => $val) {
+      if ($plugin = context_get_plugin('reaction', $key)) {
+        $plugin->execute($tag);
+      }
+    }
+  }
+
+  // Handle ad testing.
+ // module_load_include('inc', 'dfp', 'dfp.adtest');
+//  dfp_adtest_alter_tag($tag);
 }

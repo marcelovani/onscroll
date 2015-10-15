@@ -4,23 +4,166 @@
  * Implements hook_uninstall().
  */
 function onscroll_uninstall() {
-  $variables = array(
-    'onscroll_enabled',
-    'onscroll_url',
-    'onscroll_ad_slot',
-    'onscroll_campaign_id',
-    'onscroll_creative_id',
-    'onscroll_account_id',
-    'onscroll_mode',
-    'onscroll_margin',
-    'onscroll_margin_top',
-    'onscroll_height',
-    'onscroll_width',
-    'onscroll_interval',
-    'onscroll_reload',
-    'onscroll_code',
+//  $variables = array(
+//    'onscroll_enabled',
+//    'onscroll_url',
+//    'onscroll_ad_slot',
+//    'onscroll_campaign_id',
+//    'onscroll_creative_id',
+//    'onscroll_account_id',
+//    'onscroll_mode',
+//    'onscroll_margin',
+//    'onscroll_margin_top',
+//    'onscroll_height',
+//    'onscroll_width',
+//    'onscroll_interval',
+//    'onscroll_reload',
+//    'onscroll_code',
+//  );
+//  foreach ($variables as $name) {
+//    variable_del($name);
+//  }
+}
+/**
+ * Implements hook_schema().
+ */
+function onscroll_schema() {
+  $schema['onscroll_tags'] = array(
+    'description' => 'Stores information about DFP ad tags.',
+    'export' => array(
+      'key' => 'machinename',
+      'primary key' => 'adid',
+      'identifier' => 'tag', // Exports will be available as $tag
+      'default hook' => 'default_onscroll_tag', // Function hook name.
+      'api' => array(
+        'owner' => 'onscroll',
+        'api' => 'default_onscroll_tags', // Base name for api include files.
+        'minimum_version' => 1,
+        'current_version' => 1,
+      ),
+      'load callback' => 'onscroll_tag_load',
+    ),
+    'fields' => array(
+      'adid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary ID field for the table. Not used for anything except internal lookups.',
+        'no export' => TRUE, // Do not export database-only keys.
+      ),
+      'enabled' => array(
+        'type' => 'int',
+        'default' => 1,
+        'description' => "The tag is enabled.",
+      ),
+      'url' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'description' => "Onscroll url.",
+      ),
+      'slot' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'description' => "The ad slot's name.",
+      ),
+      'machinename' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'description' => "The tag's unique name.",
+      ),
+      'code' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'description' => "The tag's code.",
+      ),
+      'campaign_id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'description' => "The campaign name.",
+      ),
+      'creative_id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        //'not null' => TRUE,
+        'default' => '',
+        'description' => "The creative id.",
+      ),
+      'account_id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        //'not null' => TRUE,
+        'default' => '',
+        'description' => "The account id.",
+      ),
+      'mode' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        //'not null' => TRUE,
+        'default' => '',
+        'description' => "The tag's mode.",
+      ),
+//      'interval' => array(
+//        'type' => 'varchar',
+//        'length' => 255,
+//        //'not null' => TRUE,
+//        'default' => '',
+//        'description' => "The tag's inverval.",
+//      ),
+////      'reload' => array(
+////        'type' => 'int',
+////        'default' => 0,
+////        'description' => "The tag reloads.",
+////      ),
+
+      'margin' => array(
+        'type' => 'float',
+        'size' => 'big',
+       // 'length' => 255,
+        //'not null' => TRUE,
+        //'default' => '',
+        'description' => "The tag's size(s).",
+      ),
+      'margin_top' => array(
+        'type' => 'float',
+        'size' => 'big',
+        //'length' => 255,
+        //'not null' => TRUE,
+       // 'default' => '',
+        'description' => "The tag's size(s).",
+      ),
+      'height' => array(
+        'type' => 'float',
+        'size' => 'big',
+        //'length' => 255,
+        //'not null' => TRUE,
+        //'default' => '',
+        'description' => "The tag's size(s).",
+      ),
+      'width' => array(
+        'type' => 'float',
+        'size' => 'big',
+        //'length' => 255,
+        //'not null' => TRUE,
+        //'default' => '',
+        'description' => "The tag's size(s).",
+      ),
+//
+
+
+    ),
+    'primary key' => array('adid'),
+    'unique keys' => array(
+      'machinename' => array('machinename'),
+    ),
   );
-  foreach ($variables as $name) {
-    variable_del($name);
-  }
+
+  return $schema;
+}
+function onscroll_update_install(){
+  drupal_install_schema('onscroll_tags');
 }
