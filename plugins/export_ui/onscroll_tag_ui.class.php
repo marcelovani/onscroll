@@ -47,7 +47,7 @@ class onscroll_tag_ui extends ctools_export_ui {
     $this->rows[$name]['data'] = array();
     //$this->rows[$name]['class'] = !empty($item->enabled) ? array('ctools-export-ui-enabled') : array('ctools-export-ui-disabled');
     $this->rows[$name]['data'][] = array('data' => check_plain($item->enabled), 'class' => array('ctools-export-ui-slot'));
-    $this->rows[$name]['data'][] = array('data' => check_plain($item->url), 'class' => array('ctools-export-ui-slot'));
+    //$this->rows[$name]['data'][] = array('data' => check_plain($item->url), 'class' => array('ctools-export-ui-slot'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->slot), 'class' => array('ctools-export-ui-slot'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->machinename), 'class' => array('ctools-export-ui-size'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->code), 'class' => array('ctools-export-ui-size'));
@@ -76,7 +76,7 @@ class onscroll_tag_ui extends ctools_export_ui {
     $header = array();
 
     $header[] = array('data' => t('Enabled'), 'class' => array('ctools-export-ui-enabled'));
-    $header[] = array('data' => t('Url'), 'class' => array('ctools-export-ui-url'));
+    //$header[] = array('data' => t('Url'), 'class' => array('ctools-export-ui-url'));
     $header[] = array('data' => t('Ad Slot'), 'class' => array('ctools-export-ui-slot'));
     $header[] = array('data' => t('Machine Name'), 'class' => array('ctools-export-ui-machine-name'));
     $header[] = array('data' => t('OnScroll Code'), 'class' => array('ctools-export-ui-code'));
@@ -85,7 +85,8 @@ class onscroll_tag_ui extends ctools_export_ui {
     $header[] = array('data' => t('Account Id'), 'class' => array('ctools-export-ui-account'));
     $header[] = array('data' => t('Mode'), 'class' => array('ctools-export-ui-mode'));
 //    $header[] = array('data' => t('Interval'), 'class' => array('ctools-export-ui-operations'));
-    $header[] = array('data' => t('Storage'), 'class' => array('ctools-export-ui-storage'));
+    $header[] = array('data' => t('Reload'), 'class' => array('ctools-export-ui-reload'));
+    $header[] = array('data' => t('Storage'), 'class' => array('ctools-export-ui-reload'));
 
     return $header;
   }

@@ -52,8 +52,7 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
 
 
   // Create a default tag object.
-  $tag = ($form_state['op'] == 'add' ? $form_state['item'] : ctools_export_load_object('onscroll_tags','names',$name));
-
+  $tag = ($form_state['op'] == 'add' ? $form_state['item'] : current(ctools_export_load_object('onscroll_tags','names',$name)));
 
   $form['settings'] = array(
     '#type' => 'vertical_tabs',

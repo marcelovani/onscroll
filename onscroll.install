@@ -114,11 +114,11 @@ function onscroll_schema() {
 //        'default' => '',
 //        'description' => "The tag's inverval.",
 //      ),
-////      'reload' => array(
-////        'type' => 'int',
-////        'default' => 0,
-////        'description' => "The tag reloads.",
-////      ),
+      'reload' => array(
+        'type' => 'int',
+        'default' => 0,
+        'description' => "The tag reloads.",
+      ),
 
       'margin' => array(
         'type' => 'float',
