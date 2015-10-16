@@ -2,7 +2,7 @@
 
 /**
  * @file
- * A Ctools Export UI plugin for DFP ads.
+ * A Ctools Export UI plugin for OnScroll ads.
  */
 
 /**
@@ -14,9 +14,9 @@ $plugin = array(
 
   // Define the menu item.
   'menu' => array(
-    'menu item' => 'slots',
-    'menu prefix' => 'admin/config/system/onscroll',
-    'menu title' => 'Onscroll Slots',
+    'menu item' => 'onscroll',
+    'menu prefix' => 'admin/config/system',
+    'menu title' => 'Onscroll',
     'menu description' => 'Create and manage your Onscroll ad tags.',
   ),
 
@@ -36,7 +36,7 @@ $plugin = array(
 
   'form' => array(
     'settings' => 'onscroll_ctools_export_ui_form',
-   // 'validate' => 'onscroll_tag_form_validate',
+    'validate' => 'onscroll_tag_form_validate',
   ),
 );
 
@@ -46,15 +46,11 @@ $plugin = array(
 function onscroll_ctools_export_ui_form(&$form, &$form_state) {
   // Make sure that all the necessary files are included even on ajax callbacks.
   form_load_include($form_state, 'inc', 'onscroll', 'plugins/export_ui/onscroll_ctools_export_ui');
-  form_load_include($form_state, 'inc', 'onscroll', 'onscroll.admin');
-
+  // We load the name of the export from url.
   $name = array(arg(6));
 
-
-  // Create a default tag object.
+  // Create a default tag object based on either a new or current export object.
   $tag = ($form_state['op'] == 'add' ? $form_state['item'] : current(ctools_export_load_object('onscroll_tags','names',$name)));
-
-
 
   $form['onscroll_global'] = array(
     '#type' => 'fieldset',
@@ -71,8 +67,7 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('OnScroll URL'),
     '#default_value' => $tag->url,
-   // '#value' => $tag->url,
-    '#description' => t('For example: http://cdn.onscroll.com/onscroll.ms.js'),
+    '#value' => $form_state['op'] == 'add' ? ONSCROLL_URL : $form_state['item']->url,
   );
 
   $dfp_description = '';
@@ -109,9 +104,9 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
     '#title' => t('OnScroll Code'),
     '#description' => t('Paste the Ad code here.'),
     '#default_value' => $tag->code,
-//    '#states' => array(
-//      'visible' => array('select[name="ad_slot"]' => array('value' => 'custom')),
-//    ),
+    '#states' => array(
+      'visible' => array('select[name="ad_slot"]' => array('value' => 'custom')),
+    ),
   );
 
   $form['global']['campaign_id'] = array(
@@ -155,11 +150,10 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
   $form['options']['js_interval'] = array(
     '#type' => 'textfield',
     '#title' => t('Interval'),
-   // '#maxlength' => 4,
-    '#size' => '25',
-    '#default_value' => $tag->interval,
+    '#maxlength' => 4,
+    '#size' => '4',
+    '#default_value' => $tag->js_interval,
   );
-
 
   $form['options']['reload'] = array(
     '#type' => 'checkbox',
@@ -226,4 +220,3 @@ function onscroll_tag_name_exists($machinename) {
 
   return $select->execute()->fetchField();
 }
-

@@ -3,28 +3,6 @@ define('ONSCROLL_URL', 'http://cdn.onscroll.com/onscroll.ms.js');
 define('ONSCROLL_PLACEHOLDER', '<!-- OnScrollPlaceholder -->');
 
 /**
- * Variable defaults.
- */
-function _onscroll_variable_defaults() {
-  return array(
-    'onscroll_url' => ONSCROLL_URL,
-    'onscroll_enabled' => FALSE,
-    'onscroll_ad_slot' => 'custom',
-    'onscroll_margin' => 600,
-    'onscroll_margin_top' => 10,
-    'onscroll_mode' => 'sticky',
-    'onscroll_height' => 250,
-    'onscroll_width' => 300,
-    'onscroll_reload' => FALSE,
-    'onscroll_interval' => 30,
-    'onscroll_campaign_id' => '',
-    'onscroll_creative_id' => '',
-    'onscroll_account_id' => '',
-    'onscroll_code' => '',
-  );
-}
-
-/**
  * Get variable.
  *
  * @param $name
@@ -57,31 +35,12 @@ function onscroll_process_html(&$variables) {
   }
 }
 
-
-
-/**
- * Implements hook_menu().
- */
-function onscroll_menu() {
-  $items['admin/config/system/onscroll-settings'] = array(
-    'title' => 'OnScroll',
-    'description' => 'Configure onscroll blocks on your website.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('onscroll_admin_settings_form'),
-    'access arguments' => array('administer onscroll'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'onscroll.admin.inc',
-  );
-
-  return $items;
-}
-
 /**
  * Implementation of hook_help().
  */
 function onscroll_help($path, $arg) {
   switch ($path) {
-    case 'admin/config/system/onscroll':
+    case 'admin/config/system/onscroll/slots':
       return t('<a href="@url">OnScroll</a> determines the most appropriate time to deliver a viewable ad based on user behaviour.', array('@url' => 'http://www.onscroll.com/'));
   }
 }
@@ -189,6 +148,7 @@ function onscroll_block_view($delta = '') {
   switch ($delta) {
     case 'onscroll':
       // Block to position the onscroll ad.
+      //@TODO : give different name per container.
       $block['content'] = '<div id="onscroll-container"></div>' . ONSCROLL_PLACEHOLDER;
       break;
   }
@@ -204,54 +164,4 @@ function onscroll_ctools_plugin_directory($module, $type) {
   if ($type == 'export_ui') {
     return 'plugins/export_ui';
   }
-}
-
-
-/**
- * Load all dfp ad tags.
- *
- * @param boolean $include_disabled
- *
- * @return array of tags.
- */
-function onscroll_tag_load_all($include_disabled = FALSE) {
-  ctools_include('export');
-
-  $tags = ctools_export_crud_load_all('onscroll_tags');
-  foreach ($tags as $key => $tag) {
-    if (!$include_disabled && isset($tag->disabled) && $tag->disabled) {
-      unset($tags[$key]);
-    }
-  }
-
-  return $tags;
-}
-
-/**
- * Save a single tag.
- */
-function onscroll_tag_save(&$tag) {
-  print_r($tag);
-  $update = (isset($tag->adid) && is_numeric($tag->adid)) ? array('adid') : array();
-  exit();
-  return drupal_write_record('onscroll_tags', $tag, $update);
-}
-
-/**
- * Alter a dfp tag object to integrate with the contexts module.
- */
-function onscroll_onscroll_tag_load_alter(&$tag) {
-  // Execute context reactions for each plugin.
-  if (module_exists('context')) {
-    $contexts = onscroll_context_registry();
-    foreach ($contexts['reactions'] as $key => $val) {
-      if ($plugin = context_get_plugin('reaction', $key)) {
-        $plugin->execute($tag);
-      }
-    }
-  }
-
-  // Handle ad testing.
- // module_load_include('inc', 'dfp', 'dfp.adtest');
-//  dfp_adtest_alter_tag($tag);
 }

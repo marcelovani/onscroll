@@ -15,7 +15,6 @@ class onscroll_tag_ui extends ctools_export_ui {
    */
   function edit_form_submit(&$form, &$form_state) {
 
-
     parent::edit_form_submit($form, $form_state);
   }
 
@@ -45,9 +44,7 @@ class onscroll_tag_ui extends ctools_export_ui {
     }
 
     $this->rows[$name]['data'] = array();
-    //$this->rows[$name]['class'] = !empty($item->enabled) ? array('ctools-export-ui-enabled') : array('ctools-export-ui-disabled');
     $this->rows[$name]['data'][] = array('data' => check_plain($item->enabled), 'class' => array('ctools-export-ui-slot'));
-    //$this->rows[$name]['data'][] = array('data' => check_plain($item->url), 'class' => array('ctools-export-ui-slot'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->slot), 'class' => array('ctools-export-ui-slot'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->machinename), 'class' => array('ctools-export-ui-size'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->code), 'class' => array('ctools-export-ui-size'));
@@ -55,8 +52,7 @@ class onscroll_tag_ui extends ctools_export_ui {
     $this->rows[$name]['data'][] = array('data' => check_plain($item->creative_id), 'class' => array('ctools-export-ui-creative'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->account_id), 'class' => array('ctools-export-ui-account'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->mode), 'class' => array('ctools-export-ui-mode'));
-    //$this->rows[$name]['data'][] = array('data' => check_plain($item->interval), 'class' => array('ctools-export-ui-interval'));
-    $this->rows[$name]['data'][] = array('data' => check_plain($item->reload), 'class' => array('ctools-export-ui-interval'));
+    $this->rows[$name]['data'][] = array('data' => check_plain($item->reload), 'class' => array('ctools-export-ui-reload'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->{$schema['export']['export type string']}), 'class' => array('ctools-export-ui-storage'));
 
 
@@ -84,7 +80,6 @@ class onscroll_tag_ui extends ctools_export_ui {
     $header[] = array('data' => t('Creative Id'), 'class' => array('ctools-export-ui-creative'));
     $header[] = array('data' => t('Account Id'), 'class' => array('ctools-export-ui-account'));
     $header[] = array('data' => t('Mode'), 'class' => array('ctools-export-ui-mode'));
-//    $header[] = array('data' => t('Interval'), 'class' => array('ctools-export-ui-operations'));
     $header[] = array('data' => t('Reload'), 'class' => array('ctools-export-ui-reload'));
     $header[] = array('data' => t('Storage'), 'class' => array('ctools-export-ui-reload'));
 
