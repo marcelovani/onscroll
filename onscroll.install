@@ -138,27 +138,55 @@ function onscroll_schema() {
 function onscroll_update_install(){
   drupal_install_schema('onscroll_tags');
 }
+
 /**
  * Delete previous onscroll storage variables.
  */
 function onscroll_update_7000(){
-  $variables = array(
-    'onscroll_enabled',
-    'onscroll_url',
-    'onscroll_ad_slot',
-    'onscroll_campaign_id',
-    'onscroll_creative_id',
-    'onscroll_account_id',
-    'onscroll_mode',
-    'onscroll_margin',
-    'onscroll_margin_top',
-    'onscroll_height',
-    'onscroll_width',
-    'onscroll_interval',
-    'onscroll_reload',
-    'onscroll_code',
-  );
-  foreach ($variables as $name) {
-    variable_del($name);
+
+  // We check if one of the previosly set tags exist.
+  if (variable_get('onscroll_ad_slot')) {
+
+    // Inserting existing tag into new database.
+    db_insert('onscroll_tags')
+    ->fields(array(
+      enabled => variable_get('onscroll_enabled'),
+      url => variable_get('onscrol_url'),
+      slot => variable_get('onscroll_ad_slot'),
+      machinename => 'onscroll',
+      code => variable_get('onscroll_code'),
+      campaign_id => variable_get('onscroll_campaign_id'),
+      creative_id => variable_get('onscroll_creative_id'),
+      account_id => variable_get('onscroll_account_id'),
+      mode => variable_get('onscroll_mode'),
+      js_interval => variable_get('onscroll_interval'),
+      reload => variable_get('onscrol_slot'),
+      margin => variable_get('onscrol_slot'),
+      margin_top => variable_get('onscrol_slot'),
+      height => variable_get('onscrol_slot'),
+      width => variable_get('onscrol_slot'),
+
+    ))
+    ->execute();
+
+    $variables = array(
+      'onscroll_enabled',
+      'onscroll_url',
+      'onscroll_ad_slot',
+      'onscroll_campaign_id',
+      'onscroll_creative_id',
+      'onscroll_account_id',
+      'onscroll_mode',
+      'onscroll_margin',
+      'onscroll_margin_top',
+      'onscroll_height',
+      'onscroll_width',
+      'onscroll_interval',
+      'onscroll_reload',
+      'onscroll_code',
+    );
+    foreach ($variables as $name) {
+      variable_del($name);
+    }
   }
 }

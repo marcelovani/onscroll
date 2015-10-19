@@ -44,18 +44,15 @@ class onscroll_tag_ui extends ctools_export_ui {
     }
 
     $this->rows[$name]['data'] = array();
-    $this->rows[$name]['data'][] = array('data' => check_plain($item->enabled), 'class' => array('ctools-export-ui-slot'));
+    $this->rows[$name]['data'][] = array('data' => check_plain($item->enabled), 'class' => array('ctools-export-ui-enabled'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->slot), 'class' => array('ctools-export-ui-slot'));
-    $this->rows[$name]['data'][] = array('data' => check_plain($item->machinename), 'class' => array('ctools-export-ui-size'));
-    $this->rows[$name]['data'][] = array('data' => check_plain($item->code), 'class' => array('ctools-export-ui-size'));
+    $this->rows[$name]['data'][] = array('data' => check_plain($item->machinename), 'class' => array('ctools-export-ui-machinename'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->campaign_id), 'class' => array('ctools-export-ui-campaign'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->creative_id), 'class' => array('ctools-export-ui-creative'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->account_id), 'class' => array('ctools-export-ui-account'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->mode), 'class' => array('ctools-export-ui-mode'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->reload), 'class' => array('ctools-export-ui-reload'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->{$schema['export']['export type string']}), 'class' => array('ctools-export-ui-storage'));
-
-
 
     $ops = theme('links__ctools_dropbutton', array('links' => $operations, 'attributes' => array('class' => array('links', 'inline'))));
 
@@ -72,10 +69,8 @@ class onscroll_tag_ui extends ctools_export_ui {
     $header = array();
 
     $header[] = array('data' => t('Enabled'), 'class' => array('ctools-export-ui-enabled'));
-    //$header[] = array('data' => t('Url'), 'class' => array('ctools-export-ui-url'));
     $header[] = array('data' => t('Ad Slot'), 'class' => array('ctools-export-ui-slot'));
     $header[] = array('data' => t('Machine Name'), 'class' => array('ctools-export-ui-machine-name'));
-    $header[] = array('data' => t('OnScroll Code'), 'class' => array('ctools-export-ui-code'));
     $header[] = array('data' => t('Campaign Id'), 'class' => array('ctools-export-ui-campaign'));
     $header[] = array('data' => t('Creative Id'), 'class' => array('ctools-export-ui-creative'));
     $header[] = array('data' => t('Account Id'), 'class' => array('ctools-export-ui-account'));
@@ -120,5 +115,4 @@ class onscroll_tag_ui extends ctools_export_ui {
 
     return parent::delete_page($js, $input, $item);
   }
-
 }

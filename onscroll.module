@@ -40,7 +40,7 @@ function onscroll_process_html(&$variables) {
  */
 function onscroll_help($path, $arg) {
   switch ($path) {
-    case 'admin/config/system/onscroll/slots':
+    case 'admin/config/system/onscroll':
       return t('<a href="@url">OnScroll</a> determines the most appropriate time to deliver a viewable ad based on user behaviour.', array('@url' => 'http://www.onscroll.com/'));
   }
 }
@@ -132,11 +132,49 @@ function _onscroll_get_js() {
  * Implements hook_block_info().
  */
 function onscroll_block_info() {
-  $blocks['onscroll'] = array(
-    'info' => t('OnScroll'),
-    'cache' => DRUPAL_NO_CACHE,
-  );
+  $tags = onscroll_tag_load_all();
+  $blocks = array();
+  $hashes = array();
+
+  foreach ($tags as $tag) {
+    if ($tag->enabled) {
+      // The block table chokes when the delta is more than 32 characters. To
+      // solve this we create a hash of the machine name when needed.
+      $delta = 'onscroll_' . $tag->machinename;
+      if (drupal_strlen($delta) >= 32) {
+        $delta = md5($delta);
+        $hashes[$delta] = 'onscroll_' . $tag->machinename;
+      }
+      $blocks[$delta]['info'] = t('Onscroll tag: @slotname', array('@slotname' => $tag->slot));
+      $blocks[$delta]['cache'] = DRUPAL_NO_CACHE;
+    }
+  }
+  // Only save hashes if they have changed.
+  $old_hashes = variable_get('onscroll_block_hashes', array());
+  if ($hashes != $old_hashes) {
+    variable_set('onscroll_block_hashes', $hashes);
+  }
   return $blocks;
+}
+
+/**
+ * Load all onscroll ad tags.
+ *
+ * @param boolean $include_disabled
+ *
+ * @return array of tags.
+ */
+function onscroll_tag_load_all($include_disabled = FALSE) {
+  ctools_include('export');
+
+  $tags = ctools_export_crud_load_all('onscroll_tags');
+  foreach ($tags as $key => $tag) {
+    if (!$include_disabled && !isset($tag->enabled) && $tag->enabled) {
+      unset($tags[$key]);
+    }
+  }
+
+  return $tags;
 }
 
 /**
@@ -145,11 +183,11 @@ function onscroll_block_info() {
 function onscroll_block_view($delta = '') {
   $block = array();
 
+
   switch ($delta) {
     case 'onscroll':
       // Block to position the onscroll ad.
-      //@TODO : give different name per container.
-      $block['content'] = '<div id="onscroll-container"></div>' . ONSCROLL_PLACEHOLDER;
+      $block['content'] = '<div id="onscroll-container-' . $delta . '"></div>' . ONSCROLL_PLACEHOLDER;
       break;
   }
 

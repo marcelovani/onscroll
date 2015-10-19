@@ -46,12 +46,11 @@ $plugin = array(
 function onscroll_ctools_export_ui_form(&$form, &$form_state) {
   // Make sure that all the necessary files are included even on ajax callbacks.
   form_load_include($form_state, 'inc', 'onscroll', 'plugins/export_ui/onscroll_ctools_export_ui');
-  // We load the name of the export from url.
-  $name = array(arg(6));
 
+  // We load the name of the export from url.
+  $name = array(arg(5));
   // Create a default tag object based on either a new or current export object.
   $tag = ($form_state['op'] == 'add' ? $form_state['item'] : current(ctools_export_load_object('onscroll_tags','names',$name)));
-
   $form['onscroll_global'] = array(
     '#type' => 'fieldset',
     '#title' => t('Global Settings'),
