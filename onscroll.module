@@ -132,7 +132,7 @@ function _onscroll_get_js() {
  * Implements hook_block_info().
  */
 function onscroll_block_info() {
-  $tags = onscroll_tag_load_all();
+  $tags = onscroll_tags_load_all();
   $blocks = array();
   $hashes = array();
 
@@ -164,7 +164,7 @@ function onscroll_block_info() {
  *
  * @return array of tags.
  */
-function onscroll_tag_load_all($include_disabled = FALSE) {
+function onscroll_tags_load_all($include_disabled = FALSE) {
   ctools_include('export');
 
   $tags = ctools_export_crud_load_all('onscroll_tags');

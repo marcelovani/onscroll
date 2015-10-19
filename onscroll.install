@@ -4,9 +4,11 @@
  * Implements hook_uninstall().
  */
 function onscroll_uninstall() {
-  // Delete all the pathauto variables and then clear the variable cache.
-  db_query("DROP TABLE {onscroll_tags};");
-  cache_clear_all('variables', 'cache');
+  if(db_table_exists('onscroll_tags')){
+    // Delete all the pathauto variables and then clear the variable cache.
+    db_query("DROP TABLE {onscroll_tags};");
+    cache_clear_all('variables', 'cache');
+  }
 }
 
 /**
@@ -19,14 +21,14 @@ function onscroll_schema() {
       'key' => 'machinename',
       'primary key' => 'adid',
       'identifier' => 'tag', // Exports will be available as $tag
-      'default hook' => 'default_onscroll_tag', // Function hook name.
+      'default hook' => 'default_onscroll_tags', // Function hook name.
       'api' => array(
         'owner' => 'onscroll',
         'api' => 'default_onscroll_tags', // Base name for api include files.
         'minimum_version' => 1,
         'current_version' => 1,
       ),
-      'load callback' => 'onscroll_tag_load',
+      'load callback' => 'onscroll_tags_load',
     ),
     'fields' => array(
       'adid' => array(
@@ -136,7 +138,7 @@ function onscroll_schema() {
  * Implements hook_update_install().
  */
 function onscroll_update_install(){
-  drupal_install_schema('onscroll_tags');
+  drupal_install_schema('onscroll');
 }
 
 /**
@@ -144,14 +146,18 @@ function onscroll_update_install(){
  */
 function onscroll_update_7000(){
 
-  // We check if one of the previosly set tags exist.
+   if(!db_table_exists('onscroll_tags')){
+     drupal_install_schema('onscroll');
+   }
+
+   //We check if one of the previosly set tags exist.
   if (variable_get('onscroll_ad_slot')) {
 
     // Inserting existing tag into new database.
     db_insert('onscroll_tags')
     ->fields(array(
       enabled => variable_get('onscroll_enabled'),
-      url => variable_get('onscrol_url'),
+      url => variable_get('onscroll_url'),
       slot => variable_get('onscroll_ad_slot'),
       machinename => 'onscroll',
       code => variable_get('onscroll_code'),
@@ -160,11 +166,11 @@ function onscroll_update_7000(){
       account_id => variable_get('onscroll_account_id'),
       mode => variable_get('onscroll_mode'),
       js_interval => variable_get('onscroll_interval'),
-      reload => variable_get('onscrol_slot'),
-      margin => variable_get('onscrol_slot'),
-      margin_top => variable_get('onscrol_slot'),
-      height => variable_get('onscrol_slot'),
-      width => variable_get('onscrol_slot'),
+      reload => variable_get('onscroll_reload'),
+      margin => variable_get('onscroll_margin'),
+      margin_top => variable_get('onscroll_margin_top'),
+      height => variable_get('onscroll_height'),
+      width => variable_get('onscroll_width'),
 
     ))
     ->execute();

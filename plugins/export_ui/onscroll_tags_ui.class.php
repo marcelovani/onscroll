@@ -8,7 +8,7 @@
 /**
  * Customizations of the DART Tags UI.
  */
-class onscroll_tag_ui extends ctools_export_ui {
+class onscroll_tags_ui extends ctools_export_ui {
 
   /**
    * Prepare the tag values before they are added to the database.
@@ -26,14 +26,18 @@ class onscroll_tag_ui extends ctools_export_ui {
    * This doesn't have to be true if you override both.
    */
   function list_build_row($item, &$form_state, $operations) {
-
     // Set up sorting
     $name = $item->{$this->plugin['export']['key']};
     $schema = ctools_export_get_schema($this->plugin['schema']);
 
+    // Note: $item->{$schema['export']['export type string']} should have already been set up by export.inc so
+    // we can use it safely.
     switch ($form_state['values']['order']) {
-      case 'enabled':
-        $this->sorts[$name] = !empty($item->enabled) . $name;
+      case 'disabled':
+        $this->sorts[$name] = empty($item->disabled) . $name;
+        break;
+      case 'title':
+        $this->sorts[$name] = $item->{$this->plugin['export']['admin_title']};
         break;
       case 'name':
         $this->sorts[$name] = $name;
@@ -44,6 +48,8 @@ class onscroll_tag_ui extends ctools_export_ui {
     }
 
     $this->rows[$name]['data'] = array();
+    $this->rows[$name]['class'] = !empty($item->disabled) ? array('ctools-export-ui-disabled') : array('ctools-export-ui-enabled');
+
     $this->rows[$name]['data'][] = array('data' => check_plain($item->enabled), 'class' => array('ctools-export-ui-enabled'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->slot), 'class' => array('ctools-export-ui-slot'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->machinename), 'class' => array('ctools-export-ui-machinename'));
@@ -52,11 +58,23 @@ class onscroll_tag_ui extends ctools_export_ui {
     $this->rows[$name]['data'][] = array('data' => check_plain($item->account_id), 'class' => array('ctools-export-ui-account'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->mode), 'class' => array('ctools-export-ui-mode'));
     $this->rows[$name]['data'][] = array('data' => check_plain($item->reload), 'class' => array('ctools-export-ui-reload'));
-    $this->rows[$name]['data'][] = array('data' => check_plain($item->{$schema['export']['export type string']}), 'class' => array('ctools-export-ui-storage'));
+
+    $this->rows[$name]['data'][] = array(
+      'data' => check_plain($item->{$schema['export']['export type string']}),
+      'class' => array('ctools-export-ui-storage'),
+    );
 
     $ops = theme('links__ctools_dropbutton', array('links' => $operations, 'attributes' => array('class' => array('links', 'inline'))));
 
-    $this->rows[$name]['data'][] = array('data' => $ops, 'class' => array('ctools-export-ui-operations'));
+    $this->rows[$name]['data'][] = array(
+      'data' => $ops,
+      'class' => array('ctools-export-ui-operations'),
+    );
+
+    // Add an automatic mouseover of the description if one exists.
+    if (!empty($this->plugin['export']['admin_description'])) {
+      $this->rows[$name]['title'] = $item->{$this->plugin['export']['admin_description']};
+    }
   }
 
   /**
@@ -107,7 +125,7 @@ class onscroll_tag_ui extends ctools_export_ui {
    * Deletes any blocks associated with the exportable item being deleted.
    */
   function delete_page($js, $input, $item) {
-    $delta = drupal_strlen($item->machinename) >= 32 ? md5($item->machinename) : $item->machinename;
+    $delta = drupal_strlen('onscroll_' . $item->machinename) >= 32 ? md5('onscroll_' . $item->machinename) : 'onscroll_' . $item->machinename;
     db_delete('block')
       ->condition('module', 'onscroll')
       ->condition('delta', $delta)

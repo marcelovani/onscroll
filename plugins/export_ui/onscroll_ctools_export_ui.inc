@@ -28,7 +28,7 @@ $plugin = array(
 
   // Define the class to use as a handler for DFP ad tags.
   'handler' => array(
-     'class' => 'onscroll_tag_ui',
+     'class' => 'onscroll_tags_ui',
      'parent' => 'ctools_export_ui',
   ),
 
@@ -36,7 +36,7 @@ $plugin = array(
 
   'form' => array(
     'settings' => 'onscroll_ctools_export_ui_form',
-    'validate' => 'onscroll_tag_form_validate',
+    'validate' => 'onscroll_tags_form_validate',
   ),
 );
 
@@ -93,7 +93,7 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
       '#default_value' => $tag->machinename,
       '#description' => t('Only use letters, numbers and underscores. Example: top-banner'),
       '#machine_name' => array(
-        'exists' => 'onscroll_tag_name_exists',
+        'exists' => 'onscroll_tags_name_exists',
         'source' => array('global', 'ad_slot'),
       ),
     );
@@ -202,17 +202,18 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
 /**
  * Form validation for the dfp_ad_tag form.
  */
-function onscroll_tag_form_validate(&$form, &$form_state) {
+function onscroll_tags_form_validate(&$form, &$form_state) {
   // Ad Unit names can only have letters, numbers and slashes.¬
-  if (preg_match('@[^a-zA-Z0-9\/\-_\.\[\]\:]+@', $form_state['values']['adunit'])) {
-    form_set_error('adunit', t('Ad Unit Patterns can only include letters, numbers, hyphens, dashes, periods, slashes and tokens.'));
+  dpm($form_state['values']);
+  if (preg_match('@[^a-zA-Z0-9\/\-_\.\[\]\:]+@', $form_state['values']['machinename'])) {
+    form_set_error('machinename', t('Ad Unit Patterns can only include letters, numbers, hyphens, dashes, periods, slashes and tokens.'));
   }
 }
 
 /**
  * Check if the given machinename is unique in the dfp_tags table.
  */
-function onscroll_tag_name_exists($machinename) {
+function onscroll_tags_name_exists($machinename) {
   $select = db_select('onscroll_tags', 'dt');
   $select->addExpression('COUNT(*)');
   $select->condition('dt.machinename', $machinename);
