@@ -159,7 +159,7 @@ function onscroll_update_7000(){
       enabled => variable_get('onscroll_enabled'),
       url => variable_get('onscroll_url'),
       slot => variable_get('onscroll_ad_slot'),
-      machinename => 'onscroll',
+      machinename => '',
       code => variable_get('onscroll_code'),
       campaign_id => variable_get('onscroll_campaign_id'),
       creative_id => variable_get('onscroll_creative_id'),

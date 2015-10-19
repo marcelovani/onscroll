@@ -204,7 +204,6 @@ function onscroll_ctools_export_ui_form(&$form, &$form_state) {
  */
 function onscroll_tags_form_validate(&$form, &$form_state) {
   // Ad Unit names can only have letters, numbers and slashes.¬
-  dpm($form_state['values']);
   if (preg_match('@[^a-zA-Z0-9\/\-_\.\[\]\:]+@', $form_state['values']['machinename'])) {
     form_set_error('machinename', t('Ad Unit Patterns can only include letters, numbers, hyphens, dashes, periods, slashes and tokens.'));
   }

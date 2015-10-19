@@ -2,6 +2,30 @@
 define('ONSCROLL_URL', 'http://cdn.onscroll.com/onscroll.ms.js');
 define('ONSCROLL_PLACEHOLDER', '<!-- OnScrollPlaceholder -->');
 
+
+/**
+ * Variable defaults.
+ */
+function _onscroll_variable_defaults() {
+  return array(
+    'onscroll_url' => ONSCROLL_URL,
+    'onscroll_enabled' => FALSE,
+    'onscroll_ad_slot' => 'custom',
+    'onscroll_margin' => 600,
+    'onscroll_margin_top' => 10,
+    'onscroll_mode' => 'sticky',
+    'onscroll_height' => 250,
+    'onscroll_width' => 300,
+    'onscroll_reload' => FALSE,
+    'onscroll_interval' => 30,
+    'onscroll_campaign_id' => '',
+    'onscroll_creative_id' => '',
+    'onscroll_account_id' => '',
+    'onscroll_code' => '',
+  );
+}
+
+
 /**
  * Get variable.
  *
@@ -30,6 +54,7 @@ function onscroll_permission() {
  */
 function onscroll_process_html(&$variables) {
   if (strstr($variables['page'], ONSCROLL_PLACEHOLDER) !== FALSE) {
+
     $js = _onscroll_get_js();
     $variables['page'] = str_replace(ONSCROLL_PLACEHOLDER,  $js, $variables['page']);
   }
@@ -49,80 +74,93 @@ function onscroll_help($path, $arg) {
  * Get the onscroll block content.
  */
 function _onscroll_get_js() {
-  if (!path_is_admin(current_path()) && _onscroll_variable_get('onscroll_enabled')) {
+  if (!path_is_admin(current_path()) ) {
     // Add inline script.
     $ad_slot = '';
-    if (_onscroll_variable_get('onscroll_ad_slot') == 'custom') {
-      $ad_slot = _onscroll_variable_get('onscroll_code');
-    }
-    elseif (module_exists('dfp')) {
-      // Render the tag first so that the JS is available in drupal_add_js().
-      $tag = dfp_tag(_dfp_variable_get('dfp_ad_slot'));
-      $rendered_tag = render($tag);
-      $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
-      $pieces = array(
-        'var googletag\s*=\s*googletag\s.',
-        'googletag\.slots\[\"' . _onscroll_variable_get('onscroll_ad_slot') . '\"\]\s*=\s*googletag\.defineSlot\(',
-        'googletag\.enableServices\(',
-      );
-      $pattern = '/' . implode('|', $pieces) . '/';
+    $onscroll_content = array();
 
-      // Check for needed JavaScript respecting the key order from $pieces.
-      foreach (drupal_add_js() as $key => $value) {
-        if (is_numeric($key) && strstr($value['data'], 'googletag')) {
-          if (!preg_match($pattern, $value['data'])) {
-            continue;
-          }
-          // Loop again to order the slots.
-          foreach ($pieces as $key => $individual_pattern) {
-            // Add only dfp and onscroll related gpt code.
-            if (preg_match('/' . $individual_pattern . '/', $value['data'])) {
-              $matched_ad_slots[$key] = $value['data'];
-              break 1;
+    $tags = onscroll_tags_load_all();
+
+    foreach ($tags as $onscroll_tag) {
+
+
+      if ($onscroll_tag->slot == 'custom' && $onscroll_tag->enabled) {
+        $onscroll_tag += array($onscroll_tag->code);
+
+      }
+      elseif (module_exists('dfp')) {
+        // Render the tag first so that the JS is available in drupal_add_js().
+        $tag = dfp_tag(_onscroll_variable_get('dfp_ad_slot'));
+        $rendered_tag = render($tag);
+        $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
+        $pieces = array(
+          'var googletag\s*=\s*googletag\s.',
+          'googletag\.slots\[\"' . $onscroll_tag->slot . '\"\]\s*=\s*googletag\.defineSlot\(',
+          'googletag\.enableServices\(',
+        );
+        $pattern = '/' . implode('|', $pieces) . '/';
+
+        // Check for needed JavaScript respecting the key order from $pieces.
+        foreach (drupal_add_js() as $key => $value) {
+          if (is_numeric($key) && strstr($value['data'], 'googletag')) {
+            if (!preg_match($pattern, $value['data'])) {
+              continue;
+            }
+            // Loop again to order the slots.
+            foreach ($pieces as $key => $individual_pattern) {
+              // Add only dfp and onscroll related gpt code.
+              if (preg_match('/' . $individual_pattern . '/', $value['data'])) {
+                $matched_ad_slots[$key] = $value['data'];
+                break 1;
+              }
             }
           }
         }
-      }
 
-      // Sort the array and append values as separate script.
-      ksort($matched_ad_slots);
-      foreach ($matched_ad_slots as $ad_slot_value) {
-        $ad_slot .= '<script type="text/javascript">' . $ad_slot_value . '</script>' . PHP_EOL;
-      }
+        // Sort the array and append values as separate script.
+        ksort($matched_ad_slots);
+        foreach ($matched_ad_slots as $ad_slot_value) {
+          $ad_slot .= '<script type="text/javascript">' . $ad_slot_value . '</script>' . PHP_EOL;
+        }
 
-      $ad_slot .= $rendered_tag;
+        $ad_slot .= $rendered_tag;
 
-      // Load the ads even if "initial ad load" from dfp module
-      // is disabled in order get response from onscroll.com .
-      if (variable_get('dfp_disable_init_load', 1)) {
-        $ad_slot = str_ireplace('googletag.pubads().disableInitialLoad();', '', $ad_slot);
+        // Load the ads even if "initial ad load" from dfp module
+        // is disabled in order get response from onscroll.com .
+        if (variable_get('dfp_disable_init_load', 1)) {
+          $ad_slot = str_ireplace('googletag.pubads().disableInitialLoad();', '', $ad_slot);
+        }
       }
+      $ad_slot .= '<script src="http://cdn.onscroll.com/ms.os.js"></script>';
+
+      $tag_placeholder = $onscroll_tag->machinename == 'onscroll' ? 'onscroll' : 'onscroll_' . $onscroll_tag->machinename;
+      // Add onscroll configuration.
+      $script = '<script type="text/javascript">' . PHP_EOL;
+      $script .= 'var onScrOll=new Object();' . PHP_EOL;
+      $script .= 'onScrOll.placeholder="onscroll-container-'. $tag_placeholder .'";' . PHP_EOL;
+      $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
+      $script .= 'onScrOll.margin=' . $onscroll_tag->margin . ';' . PHP_EOL;
+      $script .= 'onScrOll.marginTop=' . $onscroll_tag->margin_top . ';' . PHP_EOL;
+      $script .= 'onScrOll.mode="' . $onscroll_tag->mode . '";' . PHP_EOL;
+      $script .= 'onScrOll.height=' . $onscroll_tag->height . ';' . PHP_EOL;
+      $script .= 'onScrOll.width=' . $onscroll_tag->width . ';' . PHP_EOL;
+      $script .= 'onScrOll.reload=' . (($onscroll_tag->reload == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
+      $script .= 'onScrOll.campaignId="' . $onscroll_tag->campaign_id . '";' . PHP_EOL;
+      $script .= 'onScrOll.creativeId="' . $onscroll_tag->creative_id . '";' . PHP_EOL;
+      $script .= 'onScrOll.accountId="' . $onscroll_tag->account_id . '";' . PHP_EOL;
+      $script .= '</script>';
+      $onscroll_content[] = $script;
+
+      // Add external script.
+      $script = '<script type="text/javascript" src="';
+      $script .= $onscroll_tag->url;
+      $script .= '"></script>';
+      $onscroll_content[] = $script;
     }
-    $ad_slot .= '<script src="http://cdn.onscroll.com/ms.os.js"></script>';
 
-    $onscroll_content = array();
-    // Add onscroll configuration.
-    $script = '<script type="text/javascript">' . PHP_EOL;
-    $script .= 'var onScrOll=new Object();' . PHP_EOL;
-    $script .= 'onScrOll.placeholder="onscroll-container";' . PHP_EOL;
-    $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
-    $script .= 'onScrOll.margin=' . _onscroll_variable_get('onscroll_margin') . ';' . PHP_EOL;
-    $script .= 'onScrOll.marginTop=' . _onscroll_variable_get('onscroll_margin_top') . ';' . PHP_EOL;
-    $script .= 'onScrOll.mode="' . _onscroll_variable_get('onscroll_mode') . '";' . PHP_EOL;
-    $script .= 'onScrOll.height=' . _onscroll_variable_get('onscroll_height') . ';' . PHP_EOL;
-    $script .= 'onScrOll.width=' . _onscroll_variable_get('onscroll_width') . ';' . PHP_EOL;
-    $script .= 'onScrOll.reload=' . ((_onscroll_variable_get('onscroll_reload') == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
-    $script .= 'onScrOll.campaignId="' . _onscroll_variable_get('onscroll_campaign_id') . '";' . PHP_EOL;
-    $script .= 'onScrOll.creativeId="' . _onscroll_variable_get('onscroll_creative_id') . '";' . PHP_EOL;
-    $script .= 'onScrOll.accountId="' . _onscroll_variable_get('onscroll_account_id') . '";' . PHP_EOL;
-    $script .= '</script>';
-    $onscroll_content[] = $script;
 
-    // Add external script.
-    $script = '<script async type="text/javascript" src="';
-    $script .= _onscroll_variable_get('onscroll_url');
-    $script .= '"></script>';
-    $onscroll_content[] = $script;
+
+
 
     return implode($onscroll_content);
   }
@@ -140,10 +178,10 @@ function onscroll_block_info() {
     if ($tag->enabled) {
       // The block table chokes when the delta is more than 32 characters. To
       // solve this we create a hash of the machine name when needed.
-      $delta = 'onscroll_' . $tag->machinename;
+      $delta = $tag->machinename == 'onscroll' ? 'onscroll' : 'onscroll_' . $tag->machinename;
       if (drupal_strlen($delta) >= 32) {
         $delta = md5($delta);
-        $hashes[$delta] = 'onscroll_' . $tag->machinename;
+        $hashes[$delta] = $delta;
       }
       $blocks[$delta]['info'] = t('Onscroll tag: @slotname', array('@slotname' => $tag->slot));
       $blocks[$delta]['cache'] = DRUPAL_NO_CACHE;
@@ -183,12 +221,9 @@ function onscroll_tags_load_all($include_disabled = FALSE) {
 function onscroll_block_view($delta = '') {
   $block = array();
 
-
-  switch ($delta) {
-    case 'onscroll':
-      // Block to position the onscroll ad.
-      $block['content'] = '<div id="onscroll-container-' . $delta . '"></div>' . ONSCROLL_PLACEHOLDER;
-      break;
+  if (strpos($delta, 'onscroll') !== FALSE){
+    // Block to position the onscroll ad.
+    $block['content'] = '<div id="onscroll-container-' . $delta . '"></div>' . ONSCROLL_PLACEHOLDER;
   }
 
   return $block;
