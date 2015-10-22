@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ *   Main module file for onscroll
+ */
 define('ONSCROLL_URL', 'http://cdn.onscroll.com/onscroll.ms.js');
 define('ONSCROLL_PLACEHOLDER', '<!-- OnScrollPlaceholder -->');
 
@@ -30,6 +34,8 @@ function _onscroll_variable_defaults() {
  * Get variable.
  *
  * @param $name
+ *  Variable name.
+ * @return null
  */
 function _onscroll_variable_get($name) {
   $defaults = _onscroll_variable_defaults();
@@ -54,9 +60,8 @@ function onscroll_permission() {
  */
 function onscroll_process_html(&$variables) {
   if (strstr($variables['page'], ONSCROLL_PLACEHOLDER) !== FALSE) {
-
     $js = _onscroll_get_js();
-    $variables['page'] = str_replace(ONSCROLL_PLACEHOLDER,  $js, $variables['page']);
+    $variables['page'] = str_replace(ONSCROLL_PLACEHOLDER, $js, $variables['page']);
   }
 }
 
@@ -74,23 +79,20 @@ function onscroll_help($path, $arg) {
  * Get the onscroll block content.
  */
 function _onscroll_get_js() {
-  if (!path_is_admin(current_path()) ) {
+  if (!path_is_admin(current_path())) {
     // Add inline script.
     $ad_slot = '';
     $onscroll_content = array();
-
     $tags = onscroll_tags_load_all();
 
     foreach ($tags as $onscroll_tag) {
 
-
       if ($onscroll_tag->slot == 'custom' && $onscroll_tag->enabled) {
         $onscroll_tag += array($onscroll_tag->code);
-
       }
       elseif (module_exists('dfp')) {
         // Render the tag first so that the JS is available in drupal_add_js().
-        $tag = dfp_tag(_onscroll_variable_get('dfp_ad_slot'));
+        $tag = dfp_tag($onscroll_tag->slot);
         $rendered_tag = render($tag);
         $ad_slot .= '<script type="text/javascript" src="http://www.googletagservices.com/tag/js/gpt.js"></script>' . PHP_EOL;
         $pieces = array(
@@ -133,11 +135,11 @@ function _onscroll_get_js() {
       }
       $ad_slot .= '<script src="http://cdn.onscroll.com/ms.os.js"></script>';
 
-      $tag_placeholder = $onscroll_tag->machinename == 'onscroll' ? 'onscroll' : 'onscroll_' . $onscroll_tag->machinename;
+      $tag_placeholder = $onscroll_tag->machinename == 'onscroll' ? '' : $onscroll_tag->machinename;
       // Add onscroll configuration.
       $script = '<script type="text/javascript">' . PHP_EOL;
       $script .= 'var onScrOll=new Object();' . PHP_EOL;
-      $script .= 'onScrOll.placeholder="onscroll-container-'. $tag_placeholder .'";' . PHP_EOL;
+      $script .= 'onScrOll.placeholder="onscroll-container' . $tag_placeholder . '";' . PHP_EOL;
       $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
       $script .= 'onScrOll.margin=' . $onscroll_tag->margin . ';' . PHP_EOL;
       $script .= 'onScrOll.marginTop=' . $onscroll_tag->margin_top . ';' . PHP_EOL;
@@ -152,15 +154,11 @@ function _onscroll_get_js() {
       $onscroll_content[] = $script;
 
       // Add external script.
-      $script = '<script type="text/javascript" src="';
+      $script = '<script async type="text/javascript" src="';
       $script .= $onscroll_tag->url;
       $script .= '"></script>';
       $onscroll_content[] = $script;
     }
-
-
-
-
 
     return implode($onscroll_content);
   }
@@ -178,7 +176,7 @@ function onscroll_block_info() {
     if ($tag->enabled) {
       // The block table chokes when the delta is more than 32 characters. To
       // solve this we create a hash of the machine name when needed.
-      $delta = $tag->machinename == 'onscroll' ? 'onscroll' : 'onscroll_' . $tag->machinename;
+      $delta = 'onscroll_' . $tag->machinename;
       if (drupal_strlen($delta) >= 32) {
         $delta = md5($delta);
         $hashes[$delta] = $delta;
@@ -198,9 +196,8 @@ function onscroll_block_info() {
 /**
  * Load all onscroll ad tags.
  *
- * @param boolean $include_disabled
- *
- * @return array of tags.
+ * @param bool|FALSE $include_disabled
+ * @return array
  */
 function onscroll_tags_load_all($include_disabled = FALSE) {
   ctools_include('export');
@@ -216,21 +213,26 @@ function onscroll_tags_load_all($include_disabled = FALSE) {
 }
 
 /**
-* Implements hook_block_view().
-*/
+ * Implements hook_block_view().
+ *
+ * @param string $delta
+ * @return array
+ */
 function onscroll_block_view($delta = '') {
   $block = array();
-
   if (strpos($delta, 'onscroll') !== FALSE){
     // Block to position the onscroll ad.
-    $block['content'] = '<div id="onscroll-container-' . $delta . '"></div>' . ONSCROLL_PLACEHOLDER;
+      $block['content'] = '<div id="'. $delta .'-container"></div>' . ONSCROLL_PLACEHOLDER;
   }
-
   return $block;
 }
 
 /**
  * Implements hook_ctools_plugin_directory().
+ *
+ * @param $module
+ * @param $type
+ * @return string
  */
 function onscroll_ctools_plugin_directory($module, $type) {
   // Load the export_ui plugin.

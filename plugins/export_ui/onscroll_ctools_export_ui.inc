@@ -33,7 +33,6 @@ $plugin = array(
   ),
 
   // Define the names of the functions that provide the add/edit forms.
-
   'form' => array(
     'settings' => 'onscroll_ctools_export_ui_form',
     'validate' => 'onscroll_tags_form_validate',
