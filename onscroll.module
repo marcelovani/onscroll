@@ -26,7 +26,6 @@ function onscroll_process_html(&$variables) {
 //  if (strstr($variables['page'], ONSCROLL_PLACEHOLDER) !== FALSE) {
     $js_array = _onscroll_get_js();
     foreach ($js_array as $delta => $js_item){
-      var_dump(str_replace('[delta]',$delta,ONSCROLL_PLACEHOLDER ));
       $variables['page'] = str_replace(str_replace('[delta]',$delta,ONSCROLL_PLACEHOLDER ), $js_item, $variables['page']);
     }
 //  }
