@@ -125,7 +125,7 @@ class onscroll_tags_ui extends ctools_export_ui {
    * Deletes any blocks associated with the exportable item being deleted.
    */
   function delete_page($js, $input, $item) {
-    $delta = drupal_strlen('onscroll_' . $item->machinename) >= 32 ? md5('onscroll_' . $item->machinename) : 'onscroll_' . $item->machinename;
+    $delta = drupal_strlen(/*'onscroll_' . */$item->machinename) >= 32 ? md5(/*'onscroll_' . */$item->machinename) : /*'onscroll_' . */$item->machinename;
     db_delete('block')
       ->condition('module', 'onscroll')
       ->condition('delta', $delta)
