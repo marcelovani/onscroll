@@ -196,3 +196,28 @@ function onscroll_update_7000(){
     }
   }
 }
+
+// test purposes
+function onscroll_update_7001(){
+// Inserting existing tag into new database.
+  db_insert('onscroll_tags')
+    ->fields(array(
+      enabled => 1,
+      url => 'test',
+      slot => 'leaderboard_2',
+      machinename => 'onscroll_leaderboard_2',
+      code => '',
+      campaign_id => '',
+      creative_id => '',
+      account_id => '',
+      mode => 'basic',
+      js_interval => '',
+      reload => 0,
+      margin => 0,
+      margin_top => 0,
+      height => 300,
+      width => 300,
+
+    ))
+    ->execute();
+}
