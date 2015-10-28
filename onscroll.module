@@ -6,30 +6,6 @@
 define('ONSCROLL_URL', 'http://cdn.onscroll.com/onscroll.ms.js');
 define('ONSCROLL_PLACEHOLDER', '<!-- OnScrollPlaceholder_[delta]-->');
 
-/**
- * Implements hook_permission().
- */
-function onscroll_permission() {
-  return array(
-    'administer onscroll' => array(
-      'title' => t('Administer onscroll'),
-      'description' => t('Administer account settings and visibility of onscroll on your site.'),
-    ),
-  );
-}
-
-/**
- * Implements hook_process_html().
- */
-function onscroll_process_html(&$variables) {
-  //@todo Modify this to get it working.
-//  if (strstr($variables['page'], ONSCROLL_PLACEHOLDER) !== FALSE) {
-    $js_array = _onscroll_get_js();
-    foreach ($js_array as $delta => $js_item){
-      $variables['page'] = str_replace(str_replace('[delta]',$delta,ONSCROLL_PLACEHOLDER ), $js_item, $variables['page']);
-    }
-//  }
-}
 
 /**
  * Implementation of hook_help().
@@ -42,6 +18,72 @@ function onscroll_help($path, $arg) {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function onscroll_permission() {
+  return array(
+    'administer onscroll' => array(
+      'title' => t('Administer onscroll'),
+      'description' => t('Administer account settings and visibility of onscroll on your site.'),
+    ),
+  );
+}
+/**
+ *
+ */
+function _onscroll_js_global_settings() {
+  // Initialize the google varibales and inject user-defined javascript.
+  //$js = 'var onScrOllWrapper = new onScrOllWrapper();' . "\n";
+  $js = 'var onScrOllArray = onScrOllArray || [];' . "\n";
+
+  $options = array(
+    'type' => 'inline',
+    'group' => JS_LIBRARY,
+    'every_page' => TRUE,
+    'weight' => -20,
+    'force header' => TRUE,
+  );
+  drupal_add_js($js, $options);
+
+  $options = array(
+    'type' => 'file',
+    'group' => JS_DEFAULT,
+    'every_page' => TRUE,
+    'weight' => -50,
+   // 'force header' => TRUE,
+    'scope' => 'footer',
+  );
+  drupal_add_js(drupal_get_path('module', 'onscroll') .'/onscroll.js', $options);
+
+
+ // dpm(drupal_get_js());
+
+}
+function onscroll_preprocess_html(&$variables){
+  // Add the header js here so that enough information has been loaded for
+  // tokens to work properly.
+  _onscroll_js_global_settings();
+}
+/**
+ * Implements hook_process_html().
+ */
+function onscroll_process_html(&$variables) {
+
+  //@todo Modify this to get it working.
+
+  if (strstr($variables['page'], 'OnScrollPlaceholder') !== FALSE) {
+
+    //drupal_add_js(file_create_url(drupal_get_path('module', 'onscroll'). '/onscroll.js'), 'file');
+    // Declare
+    $js_array = _onscroll_get_js();
+
+    foreach ($js_array as $delta => $js_item) {
+      $variables['page'] = str_replace(str_replace('[delta]', $delta, ONSCROLL_PLACEHOLDER), $js_item, $variables['page']);
+    }
+  }
+}
+
+/**
  * Get the onscroll block content.
  */
 function _onscroll_get_js() {
@@ -50,8 +92,9 @@ function _onscroll_get_js() {
     $ad_slot = '';
     $onscroll_content = array();
     $tags = onscroll_tags_load_all();
+    $iteration = 0;
+    foreach ($tags as  $onscroll_tag) {
 
-    foreach ($tags as $onscroll_tag) {
 
       if ($onscroll_tag->slot == 'custom' && $onscroll_tag->enabled) {
         $onscroll_tag += array($onscroll_tag->code);
@@ -101,11 +144,14 @@ function _onscroll_get_js() {
         }
       }
       $ad_slot .= '<script src="http://cdn.onscroll.com/ms.os.js"></script>';
-
       $tag_placeholder = 'onscroll_' . $onscroll_tag->machinename . '_container';
-      // Add onscroll configuration.
+      // Add modified onscroll script (just once).
+      $reload = $onscroll_tag->reload == FALSE ? 'false' : 'true';
+
+      // Add onscroll pods configuration.
       $script = '<script type="text/javascript">' . PHP_EOL;
       $script .= 'var onScrOll=new Object();' . PHP_EOL;
+
       $script .= 'onScrOll.placeholder="' . $tag_placeholder . '";' . PHP_EOL;
       $script .= 'onScrOll.code="' . base64_encode($ad_slot) . '";' . PHP_EOL;
       $script .= 'onScrOll.margin=' . $onscroll_tag->margin . ';' . PHP_EOL;
@@ -113,18 +159,16 @@ function _onscroll_get_js() {
       $script .= 'onScrOll.mode="' . $onscroll_tag->mode . '";' . PHP_EOL;
       $script .= 'onScrOll.height=' . $onscroll_tag->height . ';' . PHP_EOL;
       $script .= 'onScrOll.width=' . $onscroll_tag->width . ';' . PHP_EOL;
-      $script .= 'onScrOll.reload=' . (($onscroll_tag->reload == FALSE) ? 'false' : 'true') . ';' . PHP_EOL;
+      $script .= 'onScrOll.reload=' . $reload . ';' . PHP_EOL;
       $script .= 'onScrOll.campaignId="' . $onscroll_tag->campaign_id . '";' . PHP_EOL;
       $script .= 'onScrOll.creativeId="' . $onscroll_tag->creative_id . '";' . PHP_EOL;
       $script .= 'onScrOll.accountId="' . $onscroll_tag->account_id . '";' . PHP_EOL;
+
+      $script .= "onScrOllArray.push(['main', onScrOll,".$iteration."]);" . PHP_EOL;
+
       $script .= '</script>';
       $onscroll_content[$tag_placeholder] = $script;
-
-      // Add external script.
-      $script = '<script type="text/javascript" src="';
-      $script .= $onscroll_tag->url;
-      $script .= '"></script>';
-      $onscroll_content[$tag_placeholder] .= $script;
+      $iteration++;
     }
 
     //return implode($onscroll_content);
@@ -144,7 +188,7 @@ function onscroll_block_info() {
     if ($tag->enabled) {
       // The block table chokes when the delta is more than 32 characters. To
       // solve this we create a hash of the machine name when needed.
-      $delta = 'onscroll_' .  $tag->machinename;
+      $delta = 'onscroll_' . $tag->machinename;
       //$delta =  $tag->machinename;
       if (drupal_strlen($delta) >= 32) {
         $delta = md5($delta);
@@ -189,9 +233,9 @@ function onscroll_tags_load_all($include_disabled = FALSE) {
 function onscroll_block_view($delta = '') {
   $block = array();
 
-  if (strpos($delta, 'onscroll') !== FALSE){
+  if (strpos($delta, 'onscroll') !== FALSE) {
     // Block to position the onscroll ad.
-      $block['content'] = '<div id="'. $delta .'_container"></div>' . str_replace("[delta]",$delta . '_container',ONSCROLL_PLACEHOLDER);
+    $block['content'] = '<div id="' . $delta . '_container"></div>' . str_replace("[delta]", $delta . '_container', ONSCROLL_PLACEHOLDER);
   }
   return $block;
 }
